@@ -1,0 +1,33 @@
+{
+  "religions": [
+    {
+      "name": "ChristianityName",
+      "description": "ChristianityDescription",
+      "holyBookName": "ChristianityHolyBookName",
+      "practices": [
+        "ChristianityPractice1",
+        "ChristianityPractice2",
+        "ChristianityPractice3"
+      ]
+    },
+    {
+      "name": "IslamName",
+      "description": "IslamDescription",
+      "holyBookName": "IslamHolyBookName",
+      "practices": [
+        "IslamPractice1",
+        "IslamPractice2"
+      ]
+    },
+    {
+      "name": "BuddhismName",
+      "description": "BuddhismDescription",
+      "holyBookName": "BuddhismHolyBookName",
+      "practices": [
+        "BuddhismPractice1",
+        "BuddhismPractice2",
+        "BuddhismPractice3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "religions": [
+    {
+      "name": "AuroranFaithName",
+      "description": "AuroranFaithDescription",
+      "holyBookName": "AuroranFaithHolyBookName",
+      "practices": [
+        "AuroranFaithPractice1",
+        "AuroranFaithPractice2",
+        "AuroranFaithPractice3"
+      ]
+    },
+    {
+      "name": "IsendrilFaithName",
+      "description": "IsendrilFaithDescription",
+      "holyBookName": "IsendrilFaithHolyBookName",
+      "practices": [
+        "IsendrilFaithPractice1",
+        "IsendrilFaithPractice2",
+        "IsendrilFaithPractice3"
+      ]
+    },
+    {
+      "name": "SeraphicFaithName",
+      "description": "SeraphicFaithDescription",
+      "holyBookName": "SeraphicFaithHolyBookName",
+      "practices": [
+        "SeraphicFaithPractice1",
+        "SeraphicFaithPractice2",
+        "SeraphicFaithPractice3"
+      ]
+    },
+    {
+      "name": "RivendellFaithName",
+      "description": "RivendellFaithDescription",
+      "holyBookName": "RivendellFaithHolyBookName",
+      "practices": [
+        "RivendellFaithPractice1",
+        "RivendellFaithPractice2",
+        "RivendellFaithPractice3"
+      ]
+    }
+  ]
+}

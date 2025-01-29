@@ -1,0 +1,14 @@
+{
+  "religions": [
+    {
+      "name": "AtheismName",
+      "description": "AtheismDescription",
+      "holyBookName": "AtheismHolyBookName",
+      "practices": [
+        "AtheismPractice1",
+        "AtheismPractice2",
+        "AtheismPractice3"
+      ]
+    }
+  ]
+}
