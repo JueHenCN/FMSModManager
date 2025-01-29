@@ -1,0 +1,30 @@
+@namespace FMSModManager.Pages.Components
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_value"
+                     Label="@ContentText"
+                     Variant="Variant.Outlined"
+                     Immediate="true"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">取消</MudButton>
+        <MudButton Color="@Color" OnClick="Submit">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string ContentText { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+    [Parameter] public Color Color { get; set; }
+
+    private string _value;
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(_value));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+} 

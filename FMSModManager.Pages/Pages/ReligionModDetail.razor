@@ -1,0 +1,165 @@
+@page "/local-mods/religion/{ModName}"
+@using FMSModManager.Core.Services
+@using FMSModManager.Pages.Components
+@inject ReligionService ReligionService
+@inject LocalizationService LocalizationService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
+
+@if (_religionData == null)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-4">
+        <MudToolBar Dense="true">
+            <MudSpacer />
+            <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{ModName}/edit"))" 
+                          StartIcon="@Icons.Material.Filled.Edit">编辑</MudButton>
+                <MudButton Color="Color.Error" OnClick="DeleteMod" StartIcon="@Icons.Material.Filled.Delete">删除</MudButton>
+            </MudButtonGroup>
+        </MudToolBar>
+
+        <MudList Dense="true">
+            @if (!_religionData.Religions.Any())
+            {
+                <MudAlert Severity="Severity.Info">
+                    <MudText>当前 Mod 中没有宗教信息</MudText>
+                    <MudText Typo="Typo.body2">
+                        点击上方的"编辑"按钮来添加宗教
+                    </MudText>
+                </MudAlert>
+            }
+
+            @foreach (var religion in _religionData.Religions)
+            {
+                <MudListItem>
+                    <MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.TempleBuddhist" Class="mr-2" />
+                        @GetLocalizedText(religion.Name)
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="ml-8">
+                        @GetLocalizedText(religion.Description)
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="ml-8">
+                        圣典: @GetLocalizedText(religion.HolyBookName)
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="ml-8">
+                        修行方式:
+                        @foreach (var practice in religion.Practices)
+                        {
+                            <MudChip Size="Size.Small" Class="ma-1">@GetLocalizedText(practice)</MudChip>
+                        }
+                    </MudText>
+                </MudListItem>
+            }
+        </MudList>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string ModName { get; set; }
+    
+    private ReligionFile _religionData;
+    private Dictionary<string, Dictionary<string, string>> _localizations;
+
+    protected override void OnParametersSet()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        try
+        {
+            _religionData = ReligionService.ReadReligion(ModName);
+            _localizations = LocalizationService.ReadLocalization(ModName, "Religion");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"加载失败: {ex.Message}", Severity.Error);
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private string GetLocalizedText(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return "";
+        
+        if (_localizations.TryGetValue(key, out var translations) && 
+            translations.TryGetValue("Chinese", out var text))
+        {
+            return string.IsNullOrEmpty(text) ? key : text;
+        }
+        return key;
+    }
+
+    private async Task EditMod()
+    {
+        try
+        {
+            var religions = new List<Religion>();
+            foreach (var religion in _religionData.Religions)
+            {
+                religions.Add(new Religion
+                {
+                    Name = religion.Name,
+                    Description = religion.Description,
+                    HolyBookName = religion.HolyBookName,
+                    Practices = new List<string>(religion.Practices)
+                });
+            }
+            
+            var parameters = new DialogParameters
+            {
+                { "IsNew", false },
+                { "ModName", ModName },
+                { "Religions", religions }
+            };
+
+            var dialog = await DialogService.ShowAsync<ReligionModDialog>("编辑宗教 Mod", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                var data = (dynamic)result.Data;
+                ReligionService.WriteReligion(data.ModName, data.Data);
+                LoadData();
+                Snackbar.Add("Mod 更新成功", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"编辑失败: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteMod()
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "确认删除",
+            $"确定要删除 {ModName} 吗？此操作不可恢复。",
+            yesText: "删除",
+            noText: "取消"
+        );
+
+        if (result ?? false)
+        {
+            try
+            {
+                ReligionService.DeleteReligion(ModName);
+                Snackbar.Add("Mod 删除成功", Severity.Success);
+                NavigationManager.NavigateTo("/");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"删除失败: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+} 

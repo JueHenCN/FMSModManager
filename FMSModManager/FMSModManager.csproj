@@ -14,7 +14,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\FMSModManager.Core\FMSModManager.Core.csproj" />
 		<ProjectReference Include="..\FMSModManager.Pages\FMSModManager.Pages.csproj" />
 	</ItemGroup>
 

@@ -1,10 +1,47 @@
+@using FMSModManager.Core.Services
 <MudNavMenu>
-    <MudNavGroup Title="本地Mod管理" Expanded="true" Icon="@Icons.Material.Filled.Storage">
-        <MudNavLink Href="local-mods/religion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TempleBuddhist">宗教Mod管理</MudNavLink>
-        <MudNavLink Href="local-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">文化集Mod管理</MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">涓婚〉</MudNavLink>
+    
+    <MudNavGroup Title="鏈湴Mod绠＄悊" Icon="@Icons.Material.Filled.Storage">
+        <MudNavGroup Title="瀹楁暀Mod" Icon="@Icons.Material.Filled.TempleBuddhist">
+            @foreach (var mod in _religionMods)
+            {
+                <MudNavLink Href="@($"local-mods/religion/{mod}")" Icon="@Icons.Material.Filled.Article">
+                    @mod
+                </MudNavLink>
+            }
+        </MudNavGroup>
+        <MudNavLink Href="local-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">鏂囧寲Mod绠＄悊</MudNavLink>
     </MudNavGroup>
-    <MudNavGroup Title="创意工坊Mod管理" Expanded="true" Icon="@Icons.Material.Filled.ShoppingCart">
-        <MudNavLink Href="workshop-mods/religion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TempleBuddhist">宗教Mod管理</MudNavLink>
-        <MudNavLink Href="workshop-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">文化集Mod管理</MudNavLink>
+    
+    <MudNavGroup Title="鍒涙剰宸ュ潑Mod绠＄悊" Icon="@Icons.Material.Filled.ShoppingCart">
+        <MudNavLink Href="workshop-mods/religion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TempleBuddhist">瀹楁暀Mod绠＄悊</MudNavLink>
+        <MudNavLink Href="workshop-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">鏂囧寲Mod绠＄悊</MudNavLink>
     </MudNavGroup>
 </MudNavMenu>
+
+@code {
+    private List<string> _religionMods = new();
+    
+    [Inject]
+    private ReligionService ReligionService { get; set; }
+    [Inject]
+    private EventBusService EventBus { get; set; }
+    
+    private void RefreshMods()
+    {
+        _religionMods = ReligionService.GetAvailableReligionMods();
+        StateHasChanged();
+    }
+    
+    protected override void OnInitialized()
+    {
+        RefreshMods();
+        EventBus.ModsChanged += RefreshMods;
+    }
+    
+    public void Dispose()
+    {
+        EventBus.ModsChanged -= RefreshMods;
+    }
+}

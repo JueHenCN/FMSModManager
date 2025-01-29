@@ -7,9 +7,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
+using FMSModManager.Core.Services;
+using FMSModManager.Pages.Layout;
+using System.IO;
 
 namespace FMSModManager
 {
@@ -21,18 +23,20 @@ namespace FMSModManager
         public MainWindow()
         {
             InitializeComponent();
-            InitializeBlazor();
-        }
 
-        private void InitializeBlazor()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddWpfBlazorWebView();
-#if DEBUG
-            serviceCollection.AddBlazorWebViewDeveloperTools();
-#endif
-            serviceCollection.AddMudServices();
-            Resources.Add("services", serviceCollection.BuildServiceProvider());
+            var services = new ServiceCollection();
+            
+            // 获取示例文件路径
+            var examplePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Example");
+            
+            // 注册服务
+            services.AddWpfBlazorWebView();
+            services.AddMudServices();
+            services.AddSingleton<ReligionService>(new ReligionService(examplePath));
+            services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
+            services.AddSingleton<EventBusService>();
+
+            Resources.Add("services", services.BuildServiceProvider());
         }
     }
 }

@@ -1,0 +1,87 @@
+@page "/"
+@using FMSModManager.Core.Services
+@using FMSModManager.Pages.Components
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject ReligionService ReligionService
+@inject ISnackbar Snackbar
+@inject EventBusService EventBus
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5">宗教 Mod</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="CreateNewReligionMod"/>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText>创建或管理游戏中的宗教系统，包括宗教名称、圣典、修行方式等内容。</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton EndIcon="@Icons.Material.Filled.ChevronRight" Color="Color.Primary" 
+                              OnClick="@(() => NavigationManager.NavigateTo("/local-mods/religion"))">
+                        查看所有宗教 Mod
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" sm="6">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5">文化 Mod</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"/>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText>创建或管理游戏中的文化系统，包括文化特征、传统、习俗等内容。</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton EndIcon="@Icons.Material.Filled.ChevronRight" Color="Color.Primary" 
+                              OnClick="@(() => NavigationManager.NavigateTo("/local-mods/culture"))">
+                        查看所有文化 Mod
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private async Task CreateNewReligionMod()
+    {
+        var parameters = new DialogParameters
+        {
+            { "IsNew", true },
+            { "ModName", "" },
+            { "Religions", new List<Religion>() }
+        };
+
+        var dialog = await DialogService.ShowAsync<ReligionModDialog>("创建新的宗教 Mod", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                var data = (dynamic)result.Data;
+                ReligionService.WriteReligion(data.ModName, data.Data);
+                Snackbar.Add("Mod 创建成功", Severity.Success);
+                EventBus.NotifyModsChanged();
+                NavigationManager.NavigateTo($"/local-mods/religion/{data.ModName}");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"创建失败: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+} 
