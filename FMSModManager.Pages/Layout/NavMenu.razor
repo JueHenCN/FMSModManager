@@ -1,5 +1,10 @@
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    <MudNavLink Href="counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
-    <MudNavLink Href="weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Weather</MudNavLink>
+    <MudNavGroup Title="本地Mod管理" Expanded="true" Icon="@Icons.Material.Filled.Storage">
+        <MudNavLink Href="local-mods/religion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TempleBuddhist">宗教Mod管理</MudNavLink>
+        <MudNavLink Href="local-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">文化集Mod管理</MudNavLink>
+    </MudNavGroup>
+    <MudNavGroup Title="创意工坊Mod管理" Expanded="true" Icon="@Icons.Material.Filled.ShoppingCart">
+        <MudNavLink Href="workshop-mods/religion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TempleBuddhist">宗教Mod管理</MudNavLink>
+        <MudNavLink Href="workshop-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">文化集Mod管理</MudNavLink>
+    </MudNavGroup>
 </MudNavMenu>
