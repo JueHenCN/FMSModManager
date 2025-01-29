@@ -1,0 +1,31 @@
+{
+  "Common": {
+    "Home": "Home",
+    "LocalMods": "Local Mods",
+    "WorkshopMods": "Workshop Mods",
+    "ReligionMods": "Religion Mods",
+    "CultureMods": "Culture Mods",
+    "Save": "Save",
+    "Cancel": "Cancel",
+    "Delete": "Delete",
+    "Edit": "Edit",
+    "Add": "Add",
+    "Confirm": "Confirm",
+    "Success": "Success",
+    "Error": "Error",
+    "Language": "Language"
+  },
+  "Religion": {
+    "Title": "Religion Mod",
+    "Description": "Create and manage religion systems in the game, including religion names, holy books, practices, etc.",
+    "ViewAll": "View All Religion Mods",
+    "CreateNew": "Create New Mod",
+    "NoReligions": "No religions in current mod",
+    "AddNewReligion": "Add New Religion",
+    "ReligionName": "Religion Name",
+    "HolyBookName": "Holy Book Name",
+    "Practices": "Practices",
+    "BasicInfo": "Basic Info",
+    "Localization": "Localization"
+  }
+} 

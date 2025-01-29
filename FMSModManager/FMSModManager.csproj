@@ -17,4 +17,13 @@
 		<ProjectReference Include="..\FMSModManager.Pages\FMSModManager.Pages.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Content Update="wwwroot\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Languages\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>

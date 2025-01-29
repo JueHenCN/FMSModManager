@@ -35,6 +35,7 @@ namespace FMSModManager
             services.AddSingleton<ReligionService>(new ReligionService(examplePath));
             services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
             services.AddSingleton<EventBusService>();
+            services.AddSingleton<LanguageService>(new LanguageService(AppDomain.CurrentDomain.BaseDirectory));
 
             Resources.Add("services", services.BuildServiceProvider());
         }
