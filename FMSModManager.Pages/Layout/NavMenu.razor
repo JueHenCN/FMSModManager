@@ -1,4 +1,6 @@
 @using FMSModManager.Core.Services
+@using Prism.Events
+@using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
 @inject LanguageService Lang
 
@@ -29,13 +31,13 @@
     </MudNavGroup>
 
     <MudNavGroup Title="@Lang.GetText("Language")" Icon="@Icons.Material.Filled.Language">
-        @foreach (var language in LanguageService.AvailableLanguages)
+        @foreach (var language in LanguageService.AvailableLanguages.OrderBy(x => x.Value.Name))
         {
             <MudNavLink OnClick="@(() => ChangeLanguage(language.Key))"
                        Icon="@(language.Key == LanguageService.CurrentLanguage ? 
                               Icons.Material.Filled.RadioButtonChecked : 
                               Icons.Material.Filled.RadioButtonUnchecked)">
-                @language.Value
+                @language.Value.Name
             </MudNavLink>
         }
     </MudNavGroup>
@@ -47,7 +49,7 @@
     [Inject]
     private ReligionService ReligionService { get; set; }
     [Inject]
-    private EventBusService EventBus { get; set; }
+    private IEventAggregator EventAggregator { get; set; }
     [Inject]
     private LanguageService LanguageService { get; set; }
     
@@ -60,12 +62,12 @@
     protected override void OnInitialized()
     {
         RefreshMods();
-        EventBus.ModsChanged += RefreshMods;
+        EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(RefreshMods);
     }
     
     public void Dispose()
     {
-        EventBus.ModsChanged -= RefreshMods;
+        EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(RefreshMods);
     }
 
     private void ChangeLanguage(string language)

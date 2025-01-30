@@ -6,6 +6,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject LanguageService Lang
 
 <MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
 
@@ -19,9 +20,8 @@ else
         <MudToolBar Dense="true">
             <MudSpacer />
             <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{ModName}/edit"))" 
-                          StartIcon="@Icons.Material.Filled.Edit">编辑</MudButton>
-                <MudButton Color="Color.Error" OnClick="DeleteMod" StartIcon="@Icons.Material.Filled.Delete">删除</MudButton>
+                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{ModName}/edit"))"
+                           StartIcon="@Icons.Material.Filled.Edit">@Lang.GetText("Edit")</MudButton>
             </MudButtonGroup>
         </MudToolBar>
 
@@ -68,9 +68,20 @@ else
     private ReligionFile _religionData;
     private Dictionary<string, Dictionary<string, string>> _localizations;
 
-    protected override void OnParametersSet()
+    protected override void OnInitialized()
     {
+        Lang.LanguageChanged += OnLanguageChanged;
         LoadData();
+    }
+
+    private void OnLanguageChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Lang.LanguageChanged -= OnLanguageChanged;
     }
 
     private void LoadData()
@@ -92,7 +103,7 @@ else
         if (string.IsNullOrEmpty(key)) return "";
         
         if (_localizations.TryGetValue(key, out var translations) && 
-            translations.TryGetValue("Chinese", out var text))
+            translations.TryGetValue(Lang.CurrentLanguage == "zh-CN" ? "Chinese" : "English", out var text))
         {
             return string.IsNullOrEmpty(text) ? key : text;
         }
@@ -136,30 +147,6 @@ else
         catch (Exception ex)
         {
             Snackbar.Add($"编辑失败: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task DeleteMod()
-    {
-        bool? result = await DialogService.ShowMessageBox(
-            "确认删除",
-            $"确定要删除 {ModName} 吗？此操作不可恢复。",
-            yesText: "删除",
-            noText: "取消"
-        );
-
-        if (result ?? false)
-        {
-            try
-            {
-                ReligionService.DeleteReligion(ModName);
-                Snackbar.Add("Mod 删除成功", Severity.Success);
-                NavigationManager.NavigateTo("/");
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"删除失败: {ex.Message}", Severity.Error);
-            }
         }
     }
 } 

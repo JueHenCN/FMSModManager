@@ -12,6 +12,7 @@ using MudBlazor.Services;
 using FMSModManager.Core.Services;
 using FMSModManager.Pages.Layout;
 using System.IO;
+using Prism.Events;
 
 namespace FMSModManager
 {
@@ -34,7 +35,7 @@ namespace FMSModManager
             services.AddMudServices();
             services.AddSingleton<ReligionService>(new ReligionService(examplePath));
             services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
-            services.AddSingleton<EventBusService>();
+            services.AddSingleton<IEventAggregator, EventAggregator>();
             services.AddSingleton<LanguageService>(new LanguageService(AppDomain.CurrentDomain.BaseDirectory));
 
             Resources.Add("services", services.BuildServiceProvider());

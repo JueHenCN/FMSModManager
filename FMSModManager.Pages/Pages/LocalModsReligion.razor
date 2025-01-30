@@ -1,5 +1,7 @@
 @page "/local-mods/religion"
 @using FMSModManager.Core.Services
+@using Prism.Events
+@using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
 @using FMSModManager.Pages.Layout
 @inject ReligionService ReligionService
@@ -7,7 +9,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
-@inject EventBusService EventBus
+@inject IEventAggregator EventAggregator
 
 <MudText Typo="Typo.h3" Class="mb-4">本地宗教 Mod 管理</MudText>
 
@@ -104,6 +106,12 @@
     protected override void OnInitialized()
     {
         LoadReligions();
+        EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(LoadReligions);
+    }
+
+    public void Dispose()
+    {
+        EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(LoadReligions);
     }
 
     private void LoadReligions()
@@ -132,6 +140,7 @@
                 LoadReligions();
                 Snackbar.Add("Mod 创建成功", Severity.Success);
                 NavigationManager.NavigateTo($"/local-mods/religion/{data.ModName}");
+                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
             }
             catch (Exception ex)
             {
@@ -154,7 +163,7 @@
             try
             {
                 ReligionService.DeleteReligion(modName);
-                EventBus.NotifyModsChanged();
+                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
                 _religions.Remove(modName);
                 Snackbar.Add("Mod 删除成功", Severity.Success);
             }

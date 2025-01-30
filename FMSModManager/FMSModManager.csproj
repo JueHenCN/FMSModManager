@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.6" />
+		<PackageReference Include="Prism.Core" Version="8.1.97" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,6 +25,9 @@
 		<Content Update="Languages\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<None Update="Languages\languages.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

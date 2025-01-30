@@ -1,11 +1,13 @@
 @page "/"
 @using FMSModManager.Core.Services
+@using Prism.Events
+@using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 @inject ReligionService ReligionService
 @inject ISnackbar Snackbar
-@inject EventBusService EventBus
+@inject IEventAggregator EventAggregator
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-16">
     <MudGrid>
@@ -75,7 +77,8 @@
                 var data = (dynamic)result.Data;
                 ReligionService.WriteReligion(data.ModName, data.Data);
                 Snackbar.Add("Mod 创建成功", Severity.Success);
-                EventBus.NotifyModsChanged();
+                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+                await Task.Delay(100);
                 NavigationManager.NavigateTo($"/local-mods/religion/{data.ModName}");
             }
             catch (Exception ex)
