@@ -71,12 +71,17 @@ else
     protected override void OnInitialized()
     {
         Lang.LanguageChanged += OnLanguageChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
         LoadData();
     }
 
     private void OnLanguageChanged()
     {
-        InvokeAsync(StateHasChanged);
+        LoadData();
+        StateHasChanged();
     }
 
     public void Dispose()

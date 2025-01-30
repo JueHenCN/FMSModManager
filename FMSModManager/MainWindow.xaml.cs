@@ -34,9 +34,11 @@ namespace FMSModManager
             services.AddWpfBlazorWebView();
             services.AddMudServices();
             services.AddSingleton<ReligionService>(new ReligionService(examplePath));
+            services.AddSingleton<CultureService>(new CultureService(examplePath));
             services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
             services.AddSingleton<IEventAggregator, EventAggregator>();
             services.AddSingleton<LanguageService>(new LanguageService(AppDomain.CurrentDomain.BaseDirectory));
+
 
             Resources.Add("services", services.BuildServiceProvider());
         }

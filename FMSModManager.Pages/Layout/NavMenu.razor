@@ -16,9 +16,15 @@
                 </MudNavLink>
             }
         </MudNavGroup>
-        <MudNavLink Href="local-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">
-            @Lang.GetText("CultureMods")
-        </MudNavLink>
+
+        <MudNavGroup Title="@Lang.GetText("CultureMods")" Icon="@Icons.Material.Filled.Diversity3">
+            @foreach (var mod in _cultureMods)
+            {
+                <MudNavLink Href="@($"local-mods/culture/{mod}")" Icon="@Icons.Material.Filled.Article">
+                    @mod
+                </MudNavLink>
+            }
+        </MudNavGroup>
     </MudNavGroup>
     
     <MudNavGroup Title="@Lang.GetText("WorkshopMods")" Icon="@Icons.Material.Filled.ShoppingCart">
@@ -45,9 +51,12 @@
 
 @code {
     private List<string> _religionMods = new();
+    private List<string> _cultureMods = new();
     
     [Inject]
     private ReligionService ReligionService { get; set; }
+    [Inject]
+    private CultureService CultureService { get; set; }
     [Inject]
     private IEventAggregator EventAggregator { get; set; }
     [Inject]
@@ -56,6 +65,7 @@
     private void RefreshMods()
     {
         _religionMods = ReligionService.GetAvailableReligionMods();
+        _cultureMods = CultureService.GetAvailableCultures();
         StateHasChanged();
     }
     
