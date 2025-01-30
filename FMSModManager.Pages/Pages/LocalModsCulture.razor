@@ -1,5 +1,181 @@
 @page "/local-mods/culture"
+@using FMSModManager.Core.Services
+@using Prism.Events
+@using FMSModManager.Core.Events
+@using FMSModManager.Pages.Components
+@inject CultureService CultureService
+@inject LocalizationService LocalizationService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IEventAggregator EventAggregator
 
-<h3>文化集Mod管理</h3>
+<MudText Typo="Typo.h3" Class="mb-4">本地文化 Mod 管理</MudText>
 
-<p>这里是本地Mod管理 - 文化集Mod管理页面。</p>
+<MudGrid>
+    <MudItem xs="12">
+        <MudPaper Class="pa-4">
+            <MudToolBar Dense="true">
+                <MudText Typo="Typo.h5">已安装的文化 Mod</MudText>
+                <MudSpacer />
+                <MudButton Color="Color.Primary" 
+                          StartIcon="@Icons.Material.Filled.Add"
+                          OnClick="CreateNewMod">
+                    新建 Mod
+                </MudButton>
+            </MudToolBar>
+            
+            @if (_cultures == null)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else if (!_cultures.Any())
+            {
+                <MudAlert Severity="Severity.Info">未找到任何文化 Mod</MudAlert>
+            }
+            else
+            {
+                <MudTable Items="@_cultures" Dense="true" Hover="true">
+                    <HeaderContent>
+                        <MudTh>Mod 名称</MudTh>
+                        <MudTh>城市数量</MudTh>
+                        <MudTh>政治体系数量</MudTh>
+                        <MudTh>州名数量</MudTh>
+                        <MudTh>操作</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Mod 名称">@context</MudTd>
+                        <MudTd DataLabel="城市数量">
+                            @try
+                            {
+                                @(CultureService.GetCulture(context)?.CityNames.Count ?? 0)
+                            }
+                            catch
+                            {
+                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="政治体系数量">
+                            @try
+                            {
+                                @(CultureService.GetCulture(context)?.PoliticalSystems.Count ?? 0)
+                            }
+                            catch
+                            {
+                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="州名数量">
+                            @try
+                            {
+                                @(CultureService.GetCulture(context)?.StateNames.Count ?? 0)
+                            }
+                            catch
+                            {
+                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd>
+                            <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
+                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}"))">查看</MudButton>
+                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}/edit"))">编辑</MudButton>
+                                <MudButton Color="Color.Error" OnClick="@(() => DeleteCulture(context))">删除</MudButton>
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<string> _cultures;
+    private bool _loading;
+    private IEnumerable<string> _pagedData;
+    private MudTable<string> _table;
+
+    protected override void OnInitialized()
+    {
+        EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(LoadCultures);
+    }
+
+    public void Dispose()
+    {
+        EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(LoadCultures);
+    }
+
+    private void LoadCultures()
+    {
+        _loading = true;
+        StateHasChanged();
+        _cultures = CultureService.GetAvailableCultures();
+        _loading = false;
+        if (_table != null)
+            _table.ReloadServerData();
+    }
+
+    private async Task CreateNewMod()
+    {
+        // TODO: 实现创建新文化 Mod 的功能
+    }
+
+    private async Task DeleteCulture(string modName)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "确认删除",
+            $"确定要删除 {modName} 吗？此操作不可恢复。",
+            yesText: "删除",
+            noText: "取消"
+        );
+
+        if (result ?? false)
+        {
+            try
+            {
+                CultureService.DeleteCulture(modName);
+                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+                _cultures.Remove(modName);
+                Snackbar.Add("Mod 删除成功", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"删除失败: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task<TableData<string>> ServerReload(TableState state)
+    {
+        _loading = true;
+        await Task.Delay(1); // 给UI一个更新的机会
+
+        try
+        {
+            if (_cultures == null)
+            {
+                _cultures = CultureService.GetAvailableCultures();
+            }
+
+            // 计算分页
+            var totalItems = _cultures.Count;
+            var pagedData = _cultures
+                .Skip(state.Page * state.PageSize)
+                .Take(state.PageSize)
+                .ToList();
+
+            _loading = false;
+            return new TableData<string>() 
+            { 
+                TotalItems = totalItems,
+                Items = pagedData 
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"加载失败: {ex.Message}", Severity.Error);
+            _loading = false;
+            return new TableData<string>() { TotalItems = 0, Items = new List<string>() };
+        }
+    }
+}

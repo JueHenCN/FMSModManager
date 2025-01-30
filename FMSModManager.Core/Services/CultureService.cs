@@ -119,7 +119,58 @@ namespace FMSModManager.Core.Services
 
         public Culture GetCulture(string name)
         {
-            return _cultures.TryGetValue(name, out var culture) ? culture : null;
+            try
+            {
+                var cultureDir = Path.Combine(_basePath, name);
+                if (!Directory.Exists(cultureDir))
+                {
+                    return null;
+                }
+
+                var culture = new Culture { Name = name };
+
+                // 加载城市名称
+                var cityNamesPath = Path.Combine(cultureDir, "CityNames.csv");
+                if (File.Exists(cityNamesPath))
+                {
+                    culture.CityNames = LoadTranslationFile<CityName>(cityNamesPath);
+                }
+
+                // 加载政治体系
+                var politicalSystemsPath = Path.Combine(cultureDir, "PoliticalSystems.json");
+                if (File.Exists(politicalSystemsPath))
+                {
+                    var json = File.ReadAllText(politicalSystemsPath);
+                    var systems = JsonSerializer.Deserialize<PoliticalSystemsFile>(json);
+                    if (systems?.PoliticalSystems != null)
+                    {
+                        culture.PoliticalSystems = systems.PoliticalSystems;
+                    }
+                }
+
+                // 加载州名称
+                var stateNamesPath = Path.Combine(cultureDir, "StateNames.csv");
+                if (File.Exists(stateNamesPath))
+                {
+                    culture.StateNames = LoadTranslationFile<StateName>(stateNamesPath);
+                }
+
+                return culture;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading culture {name}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public void DeleteCulture(string name)
+        {
+            var culturePath = Path.Combine(_basePath, name);
+            if (Directory.Exists(culturePath))
+            {
+                Directory.Delete(culturePath, true);
+            }
         }
     }
 
