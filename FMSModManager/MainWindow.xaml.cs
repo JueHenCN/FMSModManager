@@ -33,10 +33,12 @@ namespace FMSModManager
             // 注册服务
             services.AddWpfBlazorWebView();
             services.AddMudServices();
+            services.AddSingleton<LogService>();
+            services.AddSingleton<IEventAggregator, EventAggregator>();
+            services.AddSingleton<SteamworkService>();
             services.AddSingleton<ReligionService>(new ReligionService(examplePath));
             services.AddSingleton<CultureService>(new CultureService(examplePath));
             services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
-            services.AddSingleton<IEventAggregator, EventAggregator>();
             services.AddSingleton<LanguageService>(new LanguageService(AppDomain.CurrentDomain.BaseDirectory));
 
 

@@ -28,12 +28,24 @@
     </MudNavGroup>
     
     <MudNavGroup Title="@Lang.GetText("WorkshopMods")" Icon="@Icons.Material.Filled.ShoppingCart">
-        <MudNavLink Href="workshop-mods/religion" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TempleBuddhist">
-            @Lang.GetText("ReligionMods")
-        </MudNavLink>
-        <MudNavLink Href="workshop-mods/culture" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Diversity3">
-            @Lang.GetText("CultureMods")
-        </MudNavLink>
+
+        <MudNavGroup Title="@Lang.GetText("SubscriptionMods")" Icon="@Icons.Material.Filled.Download">
+            @foreach (var mod in _subscriptionMods)
+            {
+                <MudNavLink Href="@($"workshop-mods/subscription/{mod}")" Icon="@Icons.Material.Filled.Article">
+                    @mod
+                </MudNavLink>
+            }
+        </MudNavGroup>
+
+        <MudNavGroup Title="@Lang.GetText("PublishMods")" Icon="@Icons.Material.Filled.Upload">
+            @foreach (var mod in _publishMods)
+            {
+            <MudNavLink Href="@($"workshop-mods/publish/{mod}")" Icon="@Icons.Material.Filled.Article">
+                @mod
+                </MudNavLink>
+            }
+        </MudNavGroup>
     </MudNavGroup>
 
     <MudNavGroup Title="@Lang.GetText("Language")" Icon="@Icons.Material.Filled.Language">
@@ -52,11 +64,15 @@
 @code {
     private List<string> _religionMods = new();
     private List<string> _cultureMods = new();
+    private List<string> _subscriptionMods = new();
+    private List<string> _publishMods = new();
     
     [Inject]
     private ReligionService ReligionService { get; set; }
     [Inject]
     private CultureService CultureService { get; set; }
+    [Inject]
+    private SteamworkService SteamworkService { get; set; }
     [Inject]
     private IEventAggregator EventAggregator { get; set; }
     [Inject]
@@ -66,18 +82,23 @@
     {
         _religionMods = ReligionService.GetAvailableReligionMods();
         _cultureMods = CultureService.GetAvailableCultures();
+        _subscriptionMods = SteamworkService.GetAvailableSubscriptionMods();
+        _publishMods = SteamworkService.GetAvailablePublishMods();
         StateHasChanged();
     }
     
-    protected override void OnInitialized()
+    protected async override void OnInitialized()
     {
-        RefreshMods();
+        await SteamworkService.RefauseWorkShopModList();
         EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(RefreshMods);
+        EventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Subscribe(RefreshMods);
+        RefreshMods();
     }
     
     public void Dispose()
     {
         EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(RefreshMods);
+        EventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Unsubscribe(RefreshMods);
     }
 
     private void ChangeLanguage(string language)

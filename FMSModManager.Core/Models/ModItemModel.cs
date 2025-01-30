@@ -8,6 +8,19 @@ namespace FMSModManager.Core.Models
 {
     public class ModItemModel
     {
+        public ModItemModel() { }
+
+        public ModItemModel(ulong modId, string title, string description, string createData, string updateData, bool isPublished, List<string> tags)
+        {
+            ModId = modId;
+            Title = title;
+            Description = description;
+            CreateData = createData;
+            UpdateData = updateData;
+            IsPublished = isPublished;
+            Tags = tags;
+        }
+
         public ulong ModId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }

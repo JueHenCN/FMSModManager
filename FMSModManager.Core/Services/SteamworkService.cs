@@ -6,145 +6,123 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FMSModManager.Core.Models;
+using Prism.Events;
+using FMSModManager.Core.Events;
 
 namespace FMSModManager.Core.Services
 {
     public class SteamworkService
     {
-        private uint appId;
-
-        public string GameFolder { get; set; }
+        private readonly uint GAME_APP_ID;
+        private readonly IEventAggregator _eventAggregator;
 
         public bool IsValid => SteamClient.IsValid;
 
-        public void Init(uint appId = 3035500)
+        public string GameFolder { get; set; }
+
+        public List<ModItemModel> SubscriptionModList { get; set; }
+
+        public List<ModItemModel> PublishModList { get; set; }
+
+        public SteamworkService(IEventAggregator eventAggregator, uint appId = 3035500)
+        {
+            GAME_APP_ID = appId;
+            SubscriptionModList = new List<ModItemModel>();
+            PublishModList = new List<ModItemModel>();
+            _eventAggregator = eventAggregator;
+        }
+
+        public string GetGameFolder()
         {
             try
             {
-                this.appId = appId;
-                SteamClient.Init(appId);
-                GameFolder = SteamApps.AppInstallDir(appId);
+                if (!SteamClient.IsValid) InitSteamworkService();
+                GameFolder = SteamApps.AppInstallDir(GAME_APP_ID);
+
+                return GameFolder;
             }
             catch (Exception ex)
             {
-                // LogService.Error($"Steam初始化失败", ex);
+                LogService.Error($"Steam游戏目录载入失败", ex);
+                return "";
             }
+
         }
 
-
-        public (string, bool) GetGameFolder()
+        private void InitSteamworkService()
         {
             try
             {
                 if (!SteamClient.IsValid)
-                {
-                    // LogService.Error($"SteamApi未正常初始化");
-                    return ("SteamApi未正常初始化", false);
-                }
-                string installDir = SteamApps.AppInstallDir(appId);
-                if (string.IsNullOrEmpty(installDir))
-                {
-                    // LogService.Error($"未寻找到游戏目录");
-                    return ("未寻找到游戏目录", false);
-                }
-                return (installDir, true);
+                    SteamClient.Init(GAME_APP_ID);
             }
             catch (Exception ex)
             {
-                // LogService.Error($"Steam加载游戏失败", ex);
-                return ("Steam加载游戏失败", false);
+                LogService.Error($"SteamApi初始化失败", ex);
+                throw;
             }
         }
 
-        public async Task<List<ModItemModel>> ReadAllModItem()
+        public List<string> GetAvailableSubscriptionMods()
         {
-            List<ModItemModel> list = new List<ModItemModel>();
-            try
-            {
-                if (!SteamClient.IsValid)
-                {
-                    return list;
-                }
-                var query = Query.Items.WhereUserPublished();
-                int page = 1;
+            return SubscriptionModList.Select(mod => mod.Title).ToList();
+        }
 
+        public List<string> GetAvailablePublishMods()
+        {
+            return PublishModList.Select(mod => mod.Title).ToList();
+        }
+
+        public async Task RefauseWorkShopModList()
+        {
+            try 
+            {
+                if (!IsValid) InitSteamworkService();
+
+                // Query for subscribed mods
+                var subscribedQuery = Query.Items.WhereUserSubscribed();
+                int subscribedPage = 1;
+                var subscribedList = new List<ModItemModel>();
                 while (true)
                 {
-                    var pageList = await query.GetPageAsync(page);
-                    if (pageList.HasValue)
+                    var pageList = await subscribedQuery.GetPageAsync(subscribedPage);
+                    if (!pageList.HasValue || pageList.Value.ResultCount < 1) break;
+                    foreach (var item in pageList.Value.Entries)
                     {
-                        var modValue = pageList.Value;
-                        if (modValue.ResultCount < 1)
-                        {
-                            break;
-                        }
-                        foreach (var item in modValue.Entries)
-                        {
-                            var modInfo = new ModItemModel()
-                            {
-                                ModId = item.Id.Value,
-                                Title = item.Title,
-                                Description = item.Description,
-                                CreateData = item.Created.ToString(),
-                                UpdateData = item.Updated.ToString(),
-                                Tags = item.Tags.ToList(),
-                            };
-                            list.Add(modInfo);
-                        }
+                        var modInfo = new ModItemModel(
+                            item.Id.Value, item.Title, item.Description, item.Created.ToString(),
+                            item.Updated.ToString(), true, item.Tags.ToList());
+                        subscribedList.Add(modInfo);
                     }
-                    else
-                    {
-                        break;
-                    }
-                    page++;
+                    subscribedPage++;
                 }
-            }
-            catch (Exception ex)
-            {
-                // LogService.Error($"读取Mod信息异常", ex);
-            }
-            return list;
-        }
 
-        public async Task<List<Item>> ReadAllMod()
-        {
-            List<Item> list = new List<Item>();
-            try
-            {
-                if (!SteamClient.IsValid)
-                {
-                    return list;
-                }
-                var query = Query.Items.WhereUserPublished();
-                int page = 1;
-
+                // Query for published mods
+                var publishedQuery = Query.Items.WhereUserPublished();
+                int publishedPage = 1;
+                var publishedList = new List<ModItemModel>();
                 while (true)
                 {
-                    var pageList = await query.GetPageAsync(page);
-                    if (pageList.HasValue)
+                    var pageList = await publishedQuery.GetPageAsync(publishedPage);
+                    if (!pageList.HasValue || pageList.Value.ResultCount < 1) break;
+                    foreach (var item in pageList.Value.Entries)
                     {
-                        var modValue = pageList.Value;
-                        if (modValue.ResultCount < 1)
-                        {
-                            break;
-                        }
-                        foreach (var item in modValue.Entries)
-                        {
-                            list.Add(item);
-                        }
+                        var modInfo = new ModItemModel(
+                            item.Id.Value, item.Title, item.Description, item.Created.ToString(),
+                            item.Updated.ToString(), true, item.Tags.ToList());
+                        publishedList.Add(modInfo);
                     }
-                    else
-                    {
-                        break;
-                    }
-                    page++;
+                    publishedPage++;
                 }
+
+                SubscriptionModList = subscribedList;
+                PublishModList = publishedList;
+                _eventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Publish();
             }
             catch (Exception ex)
             {
-                //LogService.Error($"读取Mod信息异常", ex);
+                LogService.Error($"读取Mod信息异常", ex);
             }
-            return list;
         }
 
         public async Task<(bool, string)> PublishModUpdate(ModUploadModel modUpload, ProgressModel progress, bool isCreate = false)
