@@ -15,11 +15,11 @@ namespace FMSModManager.Core.Services
             _basePath = Path.Combine(basePath, "Culture");
         }
 
-        public List<string> GetAvailableCultures()
+        public List<string?> GetAvailableCultures()
         {
             if (!Directory.Exists(_basePath))
             {
-                return new List<string>();
+                return new ();
             }
             return Directory.GetDirectories(_basePath)
                           .Select(Path.GetFileName)

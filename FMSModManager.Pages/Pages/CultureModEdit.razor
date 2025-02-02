@@ -1,0 +1,541 @@
+@page "/local-mods/culture/{ModName}/edit"
+@using FMSModManager.Core.Services
+@using FMSModManager.Core.Models
+@using FMSModManager.Pages.Components
+@using Prism.Events
+@using FMSModManager.Core.Events
+@using MudBlazor
+@inject CultureService CultureService
+@inject LocalizationService LocalizationService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject IEventAggregator EventAggregator
+@inject LanguageService Lang
+
+<MudText Typo="Typo.h4" Class="mb-4">编辑 @ModName</MudText>
+
+@if (_culture == null)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-4">
+        <MudContainer Style="max-height: 70vh; overflow-y: auto">
+            <MudTabs>
+                <MudTabPanel Text="城市名称">
+                    <MudToolBar Dense="true" Class="mb-2">
+                        <MudButton Color="Color.Error" 
+                                 StartIcon="@Icons.Material.Filled.Delete"
+                                 OnClick="DeleteSelectedCityNames"
+                                 Disabled="@(!_selectedCityNames.Any())">
+                            删除选中项
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Color="Color.Primary"
+                                 StartIcon="@Icons.Material.Filled.PlaylistAdd"
+                                 OnClick="BatchAddCityNames"
+                                 Class="mr-2">
+                            批量添加
+                        </MudButton>
+                        <MudButton Color="Color.Primary" 
+                                 StartIcon="@Icons.Material.Filled.Add"
+                                 OnClick="AddNewCityName">
+                            添加城市名称
+                        </MudButton>
+                    </MudToolBar>
+                    <MudTable Items="@_culture.CityNames" Dense="true" Hover="true"
+                             Breakpoint="Breakpoint.Sm"
+                             Pagination="true"
+                             MultiSelection="true"
+                             RowStyle="cursor: pointer"
+                             Style="width: auto"
+                             OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<CityName>>(this, HandleCityRowClick)"
+                             @bind-SelectedItems="_selectedCityNames">
+                        <HeaderContent>
+                            <MudTh Style="min-width: 60px"><MudTableSortHeader>序号</MudTableSortHeader></MudTh>
+                            <MudTh Style="min-width: 120px">键名</MudTh>
+                            @foreach (var lang in _languages)
+                            {
+                                <MudTh Style="min-width: 150px"><MudText Typo="Typo.subtitle2" Style="font-weight: 500">@lang.Value</MudText></MudTh>
+                            }
+                            <MudTh Style="min-width: 60px">操作</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="序号">@(_culture.CityNames.IndexOf(context) + 1)</MudTd>
+                            <MudTd DataLabel="键名">
+                                <MudTextField @bind-Value="@context.Key" Immediate="true" />
+                            </MudTd>
+                            @foreach (var lang in _languages)
+                            {
+                                <MudTd DataLabel="@lang.Value">
+                                    <MudTextField @bind-Value="context.Translations[lang.Key]"
+                                                @bind-Value:after="@(() => EnsureTranslationForCity(context, lang.Key))"
+                                                Immediate="true" />
+                                </MudTd>
+                            }
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                             Color="Color.Error"
+                                             OnClick="@(() => DeleteCityName(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }"
+                                         RowsPerPageString="每页显示:"
+                                         InfoFormat="{first_item}-{last_item} / {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudTabPanel>
+
+                <MudTabPanel Text="国家名称">
+                    <MudToolBar Dense="true" Class="mb-2">
+                        <MudButton Color="Color.Error" 
+                                 StartIcon="@Icons.Material.Filled.Delete"
+                                 OnClick="DeleteSelectedStateNames"
+                                 Disabled="@(!_selectedStateNames.Any())">
+                            删除选中项
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Color="Color.Primary"
+                                 StartIcon="@Icons.Material.Filled.PlaylistAdd"
+                                 OnClick="BatchAddStateNames"
+                                 Class="mr-2">
+                            批量添加
+                        </MudButton>
+                        <MudButton Color="Color.Primary" 
+                                 StartIcon="@Icons.Material.Filled.Add"
+                                 OnClick="AddNewStateName">
+                            添加国家名称
+                        </MudButton>
+                    </MudToolBar>
+                    <MudTable Items="@_culture.StateNames" Dense="true" Hover="true"
+                             Breakpoint="Breakpoint.Sm"
+                             Pagination="true"
+                             MultiSelection="true"
+                             RowStyle="cursor: pointer"
+                             Style="width: auto"
+                              OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<StateName>>(this, HandleStateRowClick)"
+                             @bind-SelectedItems="_selectedStateNames">
+                        <HeaderContent>
+                            <MudTh Style="min-width: 60px"><MudTableSortHeader>序号</MudTableSortHeader></MudTh>
+                            <MudTh Style="min-width: 120px">键名</MudTh>
+                            @foreach (var lang in _languages)
+                            {
+                                <MudTh Style="min-width: 150px"><MudText Typo="Typo.subtitle2" Style="font-weight: 500">@lang.Value</MudText></MudTh>
+                            }
+                            <MudTh Style="min-width: 60px">操作</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="序号">@(_culture.StateNames.IndexOf(context) + 1)</MudTd>
+                            <MudTd DataLabel="键名">
+                                <MudTextField @bind-Value="@context.Key" Immediate="true" />
+                            </MudTd>
+                            @foreach (var lang in _languages)
+                            {
+                                <MudTd DataLabel="@lang.Value">
+                                    <MudTextField @bind-Value="context.Translations[lang.Key]"
+                                                @bind-Value:after="@(() => EnsureTranslationForState(context, lang.Key))"
+                                                Immediate="true" />
+                                </MudTd>
+                            }
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                             Color="Color.Error"
+                                             OnClick="@(() => DeleteStateName(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }"
+                                         RowsPerPageString="每页显示:"
+                                         InfoFormat="{first_item}-{last_item} / {all_items}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudTabPanel>
+            </MudTabs>
+        </MudContainer>
+
+        <MudDivider Class="my-4"/>
+        
+        <MudToolBar Dense="true">
+            <MudSpacer />
+            <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{ModName}"))">
+                取消
+            </MudButton>
+            <MudButton Color="Color.Primary" OnClick="Submit">
+                保存
+            </MudButton>
+        </MudToolBar>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string ModName { get; set; }
+    
+    private Culture _culture;
+    private HashSet<CityName> _selectedCityNames = new();
+    private HashSet<StateName> _selectedStateNames = new();
+    private Dictionary<string, string> _languages = new();
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        try
+        {
+            _culture = CultureService.GetCulture(ModName) ?? new Culture { Name = ModName };
+            
+            // 确保所有必要的集合都被初始化
+            _culture.CityNames ??= new List<CityName>();
+            _culture.PoliticalSystems ??= new List<string>();
+            _culture.StateNames ??= new List<StateName>();
+            _languages = LocalizationService.GetLanguages();
+            
+            // 确保所有国家名称都包含所有语言
+            foreach (var stateName in _culture.StateNames)
+            {
+                foreach (var lang in _languages.Keys)
+                {
+                    if (!stateName.Translations.ContainsKey(lang))
+                    {
+                        stateName.Translations[lang] = "";
+                    }
+                }
+            }
+            
+            // 确保所有城市名称都包含所有语言
+            foreach (var cityName in _culture.CityNames)
+            {
+                foreach (var lang in _languages.Keys)
+                {
+                    if (!cityName.Translations.ContainsKey(lang))
+                    {
+                        cityName.Translations[lang] = "";
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"加载失败: {ex.Message}", Severity.Error);
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private async Task AddNewCityName()
+    {
+        var dialogParameters = new DialogParameters
+        {
+            { "ContentText", "请输入城市名称键" },
+            { "ButtonText", "添加" },
+            { "Color", Color.Primary }
+        };
+
+        var dialog = DialogService.Show<InputDialog>("添加新城市", dialogParameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string cityKey && !string.IsNullOrWhiteSpace(cityKey))
+        {
+            _culture.CityNames.Add(new CityName 
+            { 
+                Key = cityKey,
+                Translations = new Dictionary<string, string>
+                {
+                    { "Chinese", "" },
+                    { "English", "" }
+                }
+            });
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddNewPoliticalSystem()
+    {
+        var dialogParameters = new DialogParameters
+        {
+            { "ContentText", "请输入政治体系名称" },
+            { "ButtonText", "添加" },
+            { "Color", Color.Primary }
+        };
+
+        var dialog = DialogService.Show<InputDialog>("添加新政治体系", dialogParameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string systemName && !string.IsNullOrWhiteSpace(systemName))
+        {
+            _culture.PoliticalSystems.Add(systemName);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddNewStateName()
+    {
+        var dialogParameters = new DialogParameters
+        {
+            { "ContentText", "请输入州名称键" },
+            { "ButtonText", "添加" },
+            { "Color", Color.Primary }
+        };
+
+        var dialog = DialogService.Show<InputDialog>("添加新州名称", dialogParameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string stateKey && !string.IsNullOrWhiteSpace(stateKey))
+        {
+            _culture.StateNames.Add(new StateName 
+            { 
+                Key = stateKey,
+                Translations = new Dictionary<string, string>
+                {
+                    { "Chinese", "" },
+                    { "English", "" }
+                }
+            });
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteCityName(CityName cityName)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"确定要删除城市 {cityName.Key} 吗？" },
+            { "ButtonText", "删除" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("确认删除", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _culture.CityNames.Remove(cityName);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeletePoliticalSystem(string system)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"确定要删除政治体系 {system} 吗？" },
+            { "ButtonText", "删除" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("确认删除", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _culture.PoliticalSystems.Remove(system);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteStateName(StateName stateName)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"确定要删除州名称 {stateName.Key} 吗？" },
+            { "ButtonText", "删除" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("确认删除", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _culture.StateNames.Remove(stateName);
+            StateHasChanged();
+        }
+    }
+
+    private async Task Submit()
+    {
+        try
+        {
+            await CultureService.SaveCultureAsync(_culture);
+            EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+            Snackbar.Add("保存成功", Severity.Success);
+            NavigationManager.NavigateTo($"/local-mods/culture/{ModName}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"保存失败: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void EnsureTranslationForCity(CityName cityName, string language)
+    {
+        if (!cityName.Translations.ContainsKey(language))
+        {
+            cityName.Translations[language] = "";
+        }
+    }
+
+    private void EnsureTranslationForState(StateName stateName, string language)
+    {
+        if (!stateName.Translations.ContainsKey(language))
+        {
+            stateName.Translations[language] = "";
+        }
+    }
+
+    private async Task DeleteSelectedCityNames()
+    {
+        if (!_selectedCityNames.Any()) return;
+
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"确定要删除选中的 {_selectedCityNames.Count} 个城市吗？" },
+            { "ButtonText", "删除" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("确认删除", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            foreach (var city in _selectedCityNames.ToList())
+            {
+                _culture.CityNames.Remove(city);
+            }
+            _selectedCityNames.Clear();
+            StateHasChanged();
+        }
+    }
+
+    private async Task BatchAddCityNames()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "批量添加城市名称" },
+            { "ContentText", "每行一个城市名称键，例如：北京,上海,广州" },
+            { "ButtonText", "添加" },
+            { "Color", Color.Primary },
+            { "Multiline", true },
+            { "Lines", 10 }
+        };
+
+        var dialog = DialogService.Show<BatchInputDialog>("批量添加", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string input)
+        {
+            var keys = input.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                          .Select(k => k.Trim())
+                          .Where(k => !string.IsNullOrWhiteSpace(k));
+
+            foreach (var key in keys)
+            {
+                if (!_culture.CityNames.Any(c => c.Key == key))
+                {
+                    _culture.CityNames.Add(new CityName
+                    {
+                        Key = key,
+                        Translations = _languages.ToDictionary(l => l.Key, _ => "")
+                    });
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteSelectedStateNames()
+    {
+        if (!_selectedStateNames.Any()) return;
+
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"确定要删除选中的 {_selectedStateNames.Count} 个州吗？" },
+            { "ButtonText", "删除" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("确认删除", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            foreach (var state in _selectedStateNames.ToList())
+            {
+                _culture.StateNames.Remove(state);
+            }
+            _selectedStateNames.Clear();
+            StateHasChanged();
+        }
+    }
+
+    private async Task BatchAddStateNames()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Title", "批量添加州名称" },
+            { "ContentText", "每行一个州名称键，例如：\nBeijing\nShanghai\nGuangzhou" },
+            { "ButtonText", "添加" },
+            { "Color", Color.Primary },
+            { "Multiline", true },
+            { "Lines", 10 }
+        };
+
+        var dialog = DialogService.Show<BatchInputDialog>("批量添加", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string input)
+        {
+            var keys = input.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                          .Select(k => k.Trim())
+                          .Where(k => !string.IsNullOrWhiteSpace(k));
+
+            foreach (var key in keys)
+            {
+                if (!_culture.StateNames.Any(s => s.Key == key))
+                {
+                    _culture.StateNames.Add(new StateName
+                    {
+                        Key = key,
+                        Translations = _languages.ToDictionary(l => l.Key, _ => "")
+                    });
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleCityRowClick(TableRowClickEventArgs<CityName> args)
+    {
+        if (args?.Item == null) return;
+        
+        if (_selectedCityNames.Contains(args.Item))
+        {
+            _selectedCityNames.Remove(args.Item);
+        }
+        else
+        {
+            _selectedCityNames.Add(args.Item);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleStateRowClick(TableRowClickEventArgs<StateName> args)
+    {
+        if (args?.Item == null) return;
+        
+        if (_selectedStateNames.Contains(args.Item))
+        {
+            _selectedStateNames.Remove(args.Item);
+        }
+        else
+        {
+            _selectedStateNames.Add(args.Item);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}

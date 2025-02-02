@@ -110,5 +110,26 @@ namespace FMSModManager.Core.Services
 
             File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
         }
+
+        public Dictionary<string, string> GetLanguages()
+        {
+            return new Dictionary<string, string>
+            {
+                { "Chinese", "简体中文" },
+                { "TraditionalChinese", "繁體中文" },
+                { "English", "English" },
+                { "Russian", "Русский" },
+                { "SpanishSpain", "Español (España)" },
+                { "PortugueseBrazil", "Português (Brasil)" },
+                { "German", "Deutsch" },
+                { "Japanese", "日本語" },
+                { "French", "Français" },
+                { "Polish", "Polski" },
+                { "SpanishLatinAmerica", "Español (Latinoamérica)" },
+                { "PortuguesePortugal", "Português (Portugal)" },
+                { "Korean", "한국어" },
+                { "Turkish", "Türkçe" }
+            };
+        }
     }
 } 

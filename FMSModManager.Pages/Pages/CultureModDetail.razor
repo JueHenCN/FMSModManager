@@ -49,18 +49,7 @@ else
                 </MudTable>
             </MudTabPanel>
 
-            <MudTabPanel Text="政治体系">
-                <MudList Dense="true">
-                    @foreach (var system in _culture.PoliticalSystems)
-                    {
-                        <MudListItem>
-                            <MudText>@system</MudText>
-                        </MudListItem>
-                    }
-                </MudList>
-            </MudTabPanel>
-
-            <MudTabPanel Text="州名称">
+            <MudTabPanel Text="国家名称">
                 <MudTable Items="@_culture.StateNames" Dense="true" Hover="true"
                          Breakpoint="Breakpoint.Sm"
                          @ref="_stateNamesTable"

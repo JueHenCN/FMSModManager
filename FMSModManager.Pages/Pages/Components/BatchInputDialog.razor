@@ -1,0 +1,79 @@
+@namespace FMSModManager.Pages.Components
+
+<MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true">
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_value"
+                            Label="@ContentText"
+                            Variant="Variant.Outlined"
+                            Lines="@Lines"
+                            Immediate="true"
+                            Multiline="@Multiline"
+                            @bind-Value:after="() => OnInputChanged(_value)" />
+            </MudItem>
+            <MudItem xs="12" Class="mt-4">
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudGrid>
+                        <MudItem xs="12" Class="mb-3">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                共 @_tableData.Count 条数据
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTable Items="_tableData" Hover="true" Dense="true" FixedHeader="true" Height="300px" Class="elevation-2">
+                                <HeaderContent>
+                                    <MudTh>序号</MudTh>
+                                    <MudTh>内容</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="序号">@context.Index</MudTd>
+                                    <MudTd DataLabel="内容">@context.Value</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">取消</MudButton>
+        <MudButton Color="@Color" OnClick="Submit">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string ContentText { get; set; }
+    [Parameter] public string ButtonText { get; set; }
+    [Parameter] public Color Color { get; set; }
+    [Parameter] public bool Multiline { get; set; }
+    [Parameter] public int Lines { get; set; } = 1;
+
+    private string _value;
+    private List<TableItem> _tableData = new();
+
+    private void OnInputChanged(string value)
+    {
+        _value = value;
+        _tableData = value?.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                         .Select((x, i) => new TableItem { Index = i + 1, Value = x })
+                         .ToList() ?? new List<TableItem>();
+        StateHasChanged();
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(_value));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private class TableItem
+    {
+        public int Index { get; set; }
+        public string Value { get; set; }
+    }
+}
