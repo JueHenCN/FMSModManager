@@ -29,5 +29,13 @@
     "Practices": "修行方式",
     "BasicInfo": "基本信息",
     "Localization": "本地化"
+  },
+  "Culture": {
+    "Title": "文化 Mod",
+    "Description": "创建或管理游戏中的文化系统，包括文化名称、文化特征、文化习俗等内容",
+    "ViewAll": "查看所有文化 Mod",
+    "CreateNew": "新建 Mod",
+    "NoCultures": "当前 Mod 中没有文化信息",
+    "AddNewCulture": "添加新文化"
   }
 } 

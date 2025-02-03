@@ -36,6 +36,7 @@ namespace FMSModManager
             services.AddSingleton<LogService>();
             services.AddSingleton<IEventAggregator, EventAggregator>();
             services.AddSingleton<SteamworkService>();
+            services.AddSingleton<LocalConfigService>();
             services.AddSingleton<ReligionService>(new ReligionService(examplePath));
             services.AddSingleton<CultureService>(new CultureService(examplePath));
             services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));

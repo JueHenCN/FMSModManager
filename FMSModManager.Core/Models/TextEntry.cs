@@ -7,7 +7,7 @@ using CsvHelper.Configuration.Attributes;
 
 namespace FMSModManager.Core.Models
 {
-    public class ModTextModel
+    public class TextEntry
     {
         [Name("Key")]
         public string Key { get; set; } = string.Empty;

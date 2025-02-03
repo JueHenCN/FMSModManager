@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using FMSModManager.Core.Models;
+using FMSModManager.Core.Services.Interface;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,50 +13,73 @@ using System.Threading.Tasks;
 
 namespace FMSModManager.Core.Services
 {
-    public class CultureModService
+    public class CultureModService : ICultureModService
     {
-        private readonly string _gamePath;
+        private readonly string _modsPath;
+        private readonly IFileService _fileService;
         public List<CultureModModel> CultureMods { get; private set; } = new List<CultureModModel>();
+        private Dictionary<string, CultureModModel?> _cultureMods = new();
 
-        public CultureModService(string gamePath)
+        public CultureModService(string gamePath, IFileService fileService)
         {
-            _gamePath = Path.Combine(gamePath, "Culture");
+            _fileService = fileService;
+            _modsPath = Path.Combine(gamePath, "Culture");
             LoadCultureMods();
         }
 
         private void LoadCultureMods()
         {
-            var modDirectories = Directory.GetDirectories(_gamePath);
-            CultureMods = modDirectories.Select(dir => new CultureModModel(dir)).ToList();
+            var modDirectories = Directory.GetDirectories(_modsPath);
+            foreach (var dir in modDirectories)
+                _cultureMods.Add(Path.GetFileName(dir), null);
         }
 
-    }
-
-    public class CultureModModel
-    {
-        public readonly string ModName;
-        private readonly string _gameRootPath;
-
-        public List<ModTextModel> StateNames { get; private set; } = new List<ModTextModel>();
-        public List<ModTextModel> CityNames { get; private set; } = new List<ModTextModel>();
-        public List<string> PoliticalSystems { get; private set; } = new List<string>();
-
-        // ==================== 构造函数与初始化 ====================
-        public CultureModModel(string gameRootPath)
+        private bool VerifyModFileExists(string modName)
         {
-            ModName = Path.GetFileName(Path.GetDirectoryName(gameRootPath))!;
-            _gameRootPath = gameRootPath;
-            LoadAllData();
+            var _modPath = Path.Combine(_modsPath, modName);
+            return Directory.Exists(_modPath) &&
+                   File.Exists(Path.Combine(_modPath, FileName.StateNames)) &&
+                   File.Exists(Path.Combine(_modPath, FileName.CityNames)) &&
+                   File.Exists(Path.Combine(_modPath, FileName.PoliticalSystems));
         }
 
-        private void LoadAllData()
+        public CultureModModel? GetModData(string modName, bool isRefresh = false)
         {
-            StateNames = LoadCsvData(FileName.StateNames);
-            CityNames = LoadCsvData(FileName.CityNames);
-            PoliticalSystems = LoadJsonData(FileName.PoliticalSystems);
+            if (string.IsNullOrEmpty(modName) ||
+                !_cultureMods.ContainsKey(modName) ||
+                !VerifyModFileExists(modName))
+                return null;
+
+            if (_cultureMods[modName] == null) 
+            {
+                var mod = new CultureModModel();
+                mod.StateNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames));
+                mod.CityNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.CityNames));
+                mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
+                _cultureMods[modName] = mod;
+            }
+            
+            return _cultureMods[modName];
         }
 
-        // ==================== 文件路径管理 ====================
+        public void SaveStateNames(string modName)
+        {
+            var mod = _cultureMods[modName];
+            _fileService.WriteCsv(Path.Combine(_modsPath, FileName.StateNames), mod.StateNames);
+        }
+
+        public void SaveCityNames(string modName)
+        {
+            var mod = _cultureMods[modName];
+            _fileService.WriteCsv(Path.Combine(_modsPath, FileName.CityNames), mod.CityNames);
+        }
+
+        public void SavePoliticalSystems(string modName)
+        {
+            var mod = _cultureMods[modName];
+            _fileService.WriteJson(Path.Combine(_modsPath, FileName.PoliticalSystems), new PoliticalSystemConfig(){ PoliticalSystems = mod.PoliticalSystems });
+        }
+        
         private static class FileName
         {
             public const string StateNames = "StateNames.csv";
@@ -63,105 +87,17 @@ namespace FMSModManager.Core.Services
             public const string PoliticalSystems = "PoliticalSystems.json";
         }
 
-        private string GetFilePath(string fileName) => Path.Combine(_gameRootPath, fileName);
-
-        // ==================== 数据读取 ====================
-        private List<ModTextModel> LoadCsvData(string fileName)
-        {
-            var filePath = GetFilePath(fileName);
-            EnsureFileInitialized(filePath, InitializeCsvFile<ModTextModel>);
-
-            using var reader = new StreamReader(filePath, Encoding.UTF8);
-            using var csv = new CsvReader(reader, GetCsvConfig());
-            return csv.GetRecords<ModTextModel>()
-                     .Where(r => !string.IsNullOrEmpty(r.Key))
-                     .ToList();
-        }
-
-        private List<string> LoadJsonData(string fileName)
-        {
-            var filePath = GetFilePath(fileName);
-            EnsureFileInitialized(filePath, InitializeJsonFile);
-
-            var jsonString = File.ReadAllText(filePath, Encoding.UTF8);
-            return JsonSerializer.Deserialize<PoliticalSystemConfig>(jsonString)?.PoliticalSystems
-                   ?? new List<string>();
-        }
-
-        // ==================== 数据保存 ====================
-        public void SaveStateNames() => SaveCsvData(FileName.StateNames, StateNames);
-        public void SaveCityNames() => SaveCsvData(FileName.CityNames, CityNames);
-
-        public void SavePoliticalSystems()
-        {
-            var config = new PoliticalSystemConfig { PoliticalSystems = PoliticalSystems };
-            SaveJsonData(FileName.PoliticalSystems, config);
-        }
-
-        // ==================== 核心工具方法 ====================
-        #region 文件操作
-        private void EnsureFileInitialized(string filePath, Action<string> initializeAction)
-        {
-            EnsureDirectoryExists(filePath);
-            if (!File.Exists(filePath)) initializeAction(filePath);
-        }
-
-        private void EnsureDirectoryExists(string filePath)
-        {
-            var dir = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-        }
-
-        private void InitializeCsvFile<T>(string filePath)
-        {
-            using var writer = new StreamWriter(filePath, false, Encoding.UTF8);
-            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            csv.WriteHeader<T>();
-            csv.NextRecord();
-        }
-
-        private void InitializeJsonFile(string filePath)
-        {
-            var initialData = new PoliticalSystemConfig
-            {
-                PoliticalSystems = new List<string> { "Kingdom", "Empire" }
-            };
-            File.WriteAllText(filePath,
-                            JsonSerializer.Serialize(initialData, new JsonSerializerOptions { WriteIndented = true }),
-                            Encoding.UTF8);
-        }
-        #endregion
-
-        #region 数据序列化
-        private CsvConfiguration GetCsvConfig() => new(CultureInfo.InvariantCulture)
-        {
-            MissingFieldFound = null,
-            PrepareHeaderForMatch = args => args.Header.Trim().ToLower(),
-            IgnoreBlankLines = true,
-            Encoding = Encoding.UTF8
-        };
-
-        private void SaveCsvData<T>(string fileName, IEnumerable<T> data)
-        {
-            var filePath = GetFilePath(fileName);
-            using var writer = new StreamWriter(filePath, false, Encoding.UTF8);
-            using var csv = new CsvWriter(writer, GetCsvConfig());
-            csv.WriteRecords(data);
-        }
-
-        private void SaveJsonData<T>(string fileName, T data)
-        {
-            var filePath = GetFilePath(fileName);
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            File.WriteAllText(filePath, JsonSerializer.Serialize(data, options), Encoding.UTF8);
-        }
-        #endregion
-
         private class PoliticalSystemConfig
         {
             public List<string> PoliticalSystems { get; set; } = new List<string>();
         }
+    }
+
+    public class CultureModModel
+    {
+        public List<TextEntry> StateNames { get; set; } = new List<TextEntry>();
+        public List<TextEntry> CityNames { get; set; } = new List<TextEntry>();
+        public List<string> PoliticalSystems { get; set; } = new List<string>();
     }
 }
 

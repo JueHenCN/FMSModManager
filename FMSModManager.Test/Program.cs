@@ -7,9 +7,9 @@ namespace FMSModManager.Test
         static void Main(string[] args)
         {
             string modPath = @"E:\Project\CSharp\FantasyMapSimulator\FMSModManager\FMSModManager\bin\Debug\net8.0-windows\Example";
-            var modMgr = new CultureModService(modPath);
+            var modMgr = new CultureModService(modPath, new FileService());
 
-            var mod = new CultureModModel(@"E:\Project\CSharp\FantasyMapSimulator\FMSModManager\FMSModManager\bin\Debug\net8.0-windows\Example\Culture\EasternFantasy");
+            var mod = modMgr.GetModData("EasternFantasy");
 
             //mod.LoadCultureMod();
             Console.ReadLine();
