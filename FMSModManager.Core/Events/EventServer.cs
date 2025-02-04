@@ -6,5 +6,8 @@ namespace FMSModManager.Core.Events
 
     public class SteamworkServiceRefuseEvent : PubSubEvent { }
 
-    public class LanguageChangedEvent : PubSubEvent { }
+    public class LanguageChangedEvent : PubSubEvent<string> { }
+
+    public class GameFolderChangedEvent : PubSubEvent<string> { }
+
 } 

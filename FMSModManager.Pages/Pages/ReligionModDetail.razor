@@ -1,12 +1,15 @@
 @page "/local-mods/religion/{ModName}"
 @using FMSModManager.Core.Services
+@using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
+@using Prism.Events
 @inject ReligionService ReligionService
 @inject LocalizationService LocalizationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject LanguageService Lang
+@inject IEventAggregator EventAggregator
 
 <MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
 
@@ -21,7 +24,7 @@ else
             <MudSpacer />
             <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
                 <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{ModName}/edit"))"
-                           StartIcon="@Icons.Material.Filled.Edit">@Lang.GetText("Edit")</MudButton>
+                StartIcon="@Icons.Material.Filled.Edit">@Lang.GetText("Edit")</MudButton>
             </MudButtonGroup>
         </MudToolBar>
 
@@ -64,13 +67,13 @@ else
 
 @code {
     [Parameter] public string ModName { get; set; }
-    
+
     private ReligionFile _religionData;
     private Dictionary<string, Dictionary<string, string>> _localizations;
 
     protected override void OnInitialized()
     {
-        Lang.LanguageChanged += OnLanguageChanged;
+        EventAggregator.GetEvent<LanguageChangedEvent>().Subscribe(OnLanguageChanged);
     }
 
     protected override void OnParametersSet()
@@ -78,15 +81,10 @@ else
         LoadData();
     }
 
-    private void OnLanguageChanged()
+    private void OnLanguageChanged(string language)
     {
         LoadData();
         StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        Lang.LanguageChanged -= OnLanguageChanged;
     }
 
     private void LoadData()
@@ -108,7 +106,7 @@ else
         if (string.IsNullOrEmpty(key)) return "";
         
         if (_localizations.TryGetValue(key, out var translations) && 
-            translations.TryGetValue(Lang.CurrentLanguage == "zh-CN" ? "Chinese" : "English", out var text))
+            translations.TryGetValue(Lang.CurrentLanguage.Equals("简体中文") ? "Chinese" : "English", out var text))
         {
             return string.IsNullOrEmpty(text) ? key : text;
         }

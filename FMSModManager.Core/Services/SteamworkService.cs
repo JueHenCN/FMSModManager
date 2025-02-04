@@ -18,7 +18,7 @@ namespace FMSModManager.Core.Services
 
         public bool IsValid => SteamClient.IsValid;
 
-        public string GameFolder { get; set; }
+        private string GameFolder { get; set; }
 
         public List<ModItemModel> SubscriptionModList { get; set; }
 
@@ -79,7 +79,6 @@ namespace FMSModManager.Core.Services
             {
                 if (!IsValid) InitSteamworkService();
 
-                // Query for subscribed mods
                 var subscribedQuery = Query.Items.WhereUserSubscribed();
                 int subscribedPage = 1;
                 var subscribedList = new List<ModItemModel>();
@@ -97,7 +96,6 @@ namespace FMSModManager.Core.Services
                     subscribedPage++;
                 }
 
-                // Query for published mods
                 var publishedQuery = Query.Items.WhereUserPublished();
                 int publishedPage = 1;
                 var publishedList = new List<ModItemModel>();

@@ -34,7 +34,7 @@ namespace FMSModManager.Core.Services
             _defaultJsonOptions = defaultJsonOptions ?? new JsonSerializerOptions
             {
                 WriteIndented = true,
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
             };
         }
 

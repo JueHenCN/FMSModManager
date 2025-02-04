@@ -1,0 +1,37 @@
+﻿@* 在 Components 目录下创建 NewCultureDialog.razor *@
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">新建文化集 Mod</MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudTextField @bind-Value="_modName"
+                      Label="Mod 名称"
+                      Required="true"
+                      RequiredError="必须输入名称"
+                      Immediate="true" />
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Text"
+                   OnClick="Cancel">取消</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Text"
+                   Disabled="@(!_isValid)"
+                   OnClick="Submit">创建</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    private string _modName;
+    private bool _isValid => !string.IsNullOrWhiteSpace(_modName);
+
+    void Cancel() => MudDialog.Cancel();
+    void Submit() => MudDialog.Close(DialogResult.Ok(_modName.Trim()));
+}

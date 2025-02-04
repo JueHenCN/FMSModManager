@@ -17,13 +17,15 @@ namespace FMSModManager.Core.Services
     {
         private readonly string _modsPath;
         private readonly IFileService _fileService;
+        private readonly SteamworkService _steamworkService;
         public List<CultureModModel> CultureMods { get; private set; } = new List<CultureModModel>();
         private Dictionary<string, CultureModModel?> _cultureMods = new();
 
-        public CultureModService(string gamePath, IFileService fileService)
+        public CultureModService(SteamworkService steamworkService, IFileService fileService)
         {
             _fileService = fileService;
-            _modsPath = Path.Combine(gamePath, "Culture");
+            _steamworkService = steamworkService;
+            _modsPath = Path.Combine(_steamworkService.GetGameFolder(), "FantasyMapSimulator_Data\\StreamingAssets\\Base\\Culture");
             LoadCultureMods();
         }
 
@@ -43,14 +45,42 @@ namespace FMSModManager.Core.Services
                    File.Exists(Path.Combine(_modPath, FileName.PoliticalSystems));
         }
 
-        public CultureModModel? GetModData(string modName, bool isRefresh = false)
+        public List<string> GetAvailableCultureMods()
+        {
+            return _cultureMods.Keys.ToList();
+        }
+
+        public CultureModModel CreateCultureMod(string modName)
+
+        {
+            var mod = new CultureModModel();
+            mod.CityNames.Add(new TextEntry() { Key = "TestKey", Chinese = "新的城市", English = "New City" });
+            mod.StateNames.Add(new TextEntry() { Key = "TestKey", Chinese = "新的国家", English = "New State" });
+            mod.PoliticalSystems.Add("Kingdom");
+            _cultureMods.Add(modName, mod);
+            _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.StateNames), mod.StateNames);
+            _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.CityNames), mod.CityNames);
+            _fileService.WriteJson(Path.Combine(_modsPath, modName, FileName.PoliticalSystems), new PoliticalSystemConfig() { PoliticalSystems = mod.PoliticalSystems });
+            return mod;
+
+        }
+
+        public bool DeleteCultureMod(string modName)
+        {
+            if (!_cultureMods.ContainsKey(modName))
+                return false;
+            _cultureMods.Remove(modName);
+            return true;
+        }
+
+        public CultureModModel? GetCultureMod(string modName, bool isRefresh = false)
         {
             if (string.IsNullOrEmpty(modName) ||
                 !_cultureMods.ContainsKey(modName) ||
                 !VerifyModFileExists(modName))
                 return null;
 
-            if (_cultureMods[modName] == null) 
+            if (_cultureMods[modName] == null)
             {
                 var mod = new CultureModModel();
                 mod.StateNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames));
@@ -58,8 +88,16 @@ namespace FMSModManager.Core.Services
                 mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
                 _cultureMods[modName] = mod;
             }
-            
+
             return _cultureMods[modName];
+        }
+
+        public void SaveCultureMod(string modName)
+        {
+            var mod = _cultureMods[modName];
+            mod.StateNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames));
+            mod.CityNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.CityNames));
+            mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
         }
 
         public void SaveStateNames(string modName)
@@ -77,9 +115,9 @@ namespace FMSModManager.Core.Services
         public void SavePoliticalSystems(string modName)
         {
             var mod = _cultureMods[modName];
-            _fileService.WriteJson(Path.Combine(_modsPath, FileName.PoliticalSystems), new PoliticalSystemConfig(){ PoliticalSystems = mod.PoliticalSystems });
+            _fileService.WriteJson(Path.Combine(_modsPath, FileName.PoliticalSystems), new PoliticalSystemConfig() { PoliticalSystems = mod.PoliticalSystems });
         }
-        
+
         private static class FileName
         {
             public const string StateNames = "StateNames.csv";

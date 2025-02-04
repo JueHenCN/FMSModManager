@@ -1,8 +1,10 @@
 @using FMSModManager.Core.Services
+@using FMSModManager.Core.Services.Interface
 @using Prism.Events
 @using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
 @inject LanguageService Lang
+@inject ICultureModService CultureModService
 
 <MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Lang.GetText("Home")</MudNavLink>
@@ -47,41 +49,26 @@
             }
         </MudNavGroup>
     </MudNavGroup>
-
-    <MudNavGroup Title="@Lang.GetText("Language")" Icon="@Icons.Material.Filled.Language">
-        @foreach (var language in LanguageService.AvailableLanguages.OrderBy(x => x.Value.Name))
-        {
-            <MudNavLink OnClick="@(() => ChangeLanguage(language.Key))"
-                       Icon="@(language.Key == LanguageService.CurrentLanguage ? 
-                              Icons.Material.Filled.RadioButtonChecked : 
-                              Icons.Material.Filled.RadioButtonUnchecked)">
-                @language.Value.Name
-            </MudNavLink>
-        }
-    </MudNavGroup>
 </MudNavMenu>
 
 @code {
-    private List<string> _religionMods = new();
     private List<string> _cultureMods = new();
+    private List<string> _religionMods = new();
     private List<string> _subscriptionMods = new();
     private List<string> _publishMods = new();
     
     [Inject]
     private ReligionService ReligionService { get; set; }
     [Inject]
-    private CultureService CultureService { get; set; }
-    [Inject]
     private SteamworkService SteamworkService { get; set; }
     [Inject]
     private IEventAggregator EventAggregator { get; set; }
-    [Inject]
-    private LanguageService LanguageService { get; set; }
     
+
     private void RefreshMods()
     {
+        _cultureMods = CultureModService.GetAvailableCultureMods();
         _religionMods = ReligionService.GetAvailableReligionMods();
-        _cultureMods = CultureService.GetAvailableCultures();
         _subscriptionMods = SteamworkService.GetAvailableSubscriptionMods();
         _publishMods = SteamworkService.GetAvailablePublishMods();
         StateHasChanged();
@@ -99,10 +86,5 @@
     {
         EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(RefreshMods);
         EventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Unsubscribe(RefreshMods);
-    }
-
-    private void ChangeLanguage(string language)
-    {
-        LanguageService.SetLanguage(language);
     }
 }

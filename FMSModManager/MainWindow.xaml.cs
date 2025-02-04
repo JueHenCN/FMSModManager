@@ -13,6 +13,7 @@ using FMSModManager.Core.Services;
 using FMSModManager.Pages.Layout;
 using System.IO;
 using Prism.Events;
+using FMSModManager.Core.Services.Interface;
 
 namespace FMSModManager
 {
@@ -35,12 +36,14 @@ namespace FMSModManager
             services.AddMudServices();
             services.AddSingleton<LogService>();
             services.AddSingleton<IEventAggregator, EventAggregator>();
+            services.AddSingleton<IFileService, FileService>();
             services.AddSingleton<SteamworkService>();
             services.AddSingleton<LocalConfigService>();
             services.AddSingleton<ReligionService>(new ReligionService(examplePath));
             services.AddSingleton<CultureService>(new CultureService(examplePath));
             services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
-            services.AddSingleton<LanguageService>(new LanguageService(AppDomain.CurrentDomain.BaseDirectory));
+            services.AddSingleton<ICultureModService, CultureModService>();
+            services.AddSingleton<LanguageService>();
 
 
             Resources.Add("services", services.BuildServiceProvider());

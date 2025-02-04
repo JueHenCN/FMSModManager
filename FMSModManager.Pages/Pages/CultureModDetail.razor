@@ -1,12 +1,13 @@
 ﻿@page "/local-mods/culture/{ModName}"
 @using FMSModManager.Core.Services
 @using FMSModManager.Core.Models
-@inject CultureService CultureService
+@using FMSModManager.Core.Services.Interface
 @inject LocalizationService LocalizationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject LanguageService Lang
+@inject ICultureModService CultureModService
 
 <MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
 
@@ -37,14 +38,14 @@ else
                         <MudTh>英文</MudTh>
                     </HeaderContent>
                     <PagerContent>
-                        <MudTablePager PageSizeOptions="new int[] { 8, 16, 32 }"
+                        <MudTablePager PageSizeOptions="pageList"
                                      RowsPerPageString="每页显示:"
                                      InfoFormat="{first_item}-{last_item} / {all_items}" />
                     </PagerContent>
                     <RowTemplate>
                         <MudTd DataLabel="键名">@context.Key</MudTd>
-                        <MudTd DataLabel="中文">@GetTranslation(context, "Chinese")</MudTd>
-                        <MudTd DataLabel="英文">@GetTranslation(context, "English")</MudTd>
+                        <MudTd DataLabel="中文">@context.Chinese</MudTd>
+                        <MudTd DataLabel="英文">@context.English</MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudTabPanel>
@@ -60,14 +61,14 @@ else
                         <MudTh>英文</MudTh>
                     </HeaderContent>
                     <PagerContent>
-                        <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }"
+                        <MudTablePager PageSizeOptions="pageList"
                                      RowsPerPageString="每页显示:"
                                      InfoFormat="{first_item}-{last_item} / {all_items}" />
                     </PagerContent>
                     <RowTemplate>
                         <MudTd DataLabel="键名">@context.Key</MudTd>
-                        <MudTd DataLabel="中文">@GetTranslation(context, "Chinese")</MudTd>
-                        <MudTd DataLabel="英文">@GetTranslation(context, "English")</MudTd>
+                        <MudTd DataLabel="中文">@context.Chinese</MudTd>
+                        <MudTd DataLabel="英文">@context.English</MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudTabPanel>
@@ -78,13 +79,15 @@ else
 @code {
     [Parameter] public string ModName { get; set; }
     
-    private Culture _culture;
-    private MudTable<CityName> _cityNamesTable;
-    private MudTable<StateName> _stateNamesTable;
+    private CultureModModel _culture;
+    private MudTable<TextEntry> _cityNamesTable;
+    private MudTable<TextEntry> _stateNamesTable;
+    private int[] pageList = new int[] { 10, 20, 50, 100 };
+    
 
     protected override void OnInitialized()
     {
-        Lang.LanguageChanged += OnLanguageChanged;
+        LoadData();
     }
 
     protected override void OnParametersSet()
@@ -98,16 +101,11 @@ else
         StateHasChanged();
     }
 
-    public void Dispose()
-    {
-        Lang.LanguageChanged -= OnLanguageChanged;
-    }
-
     private void LoadData()
     {
         try
         {
-            _culture = CultureService.GetCulture(ModName);
+            _culture = CultureModService.GetCultureMod(ModName);
             if (_cityNamesTable != null)
             {
                 var currentRowsPerPage = _cityNamesTable.RowsPerPage;

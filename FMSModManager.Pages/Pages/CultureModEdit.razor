@@ -1,17 +1,18 @@
 @page "/local-mods/culture/{ModName}/edit"
 @using FMSModManager.Core.Services
 @using FMSModManager.Core.Models
+@using FMSModManager.Core.Services.Interface
 @using FMSModManager.Pages.Components
 @using Prism.Events
 @using FMSModManager.Core.Events
 @using MudBlazor
-@inject CultureService CultureService
 @inject LocalizationService LocalizationService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject IEventAggregator EventAggregator
 @inject LanguageService Lang
+@inject ICultureModService CultureModService
 
 <MudText Typo="Typo.h4" Class="mb-4">编辑 @ModName</MudText>
 
@@ -45,48 +46,32 @@ else
                             添加城市名称
                         </MudButton>
                     </MudToolBar>
-                    <MudTable Items="@_culture.CityNames" Dense="true" Hover="true"
-                             Breakpoint="Breakpoint.Sm"
-                             Pagination="true"
-                             MultiSelection="true"
-                             RowStyle="cursor: pointer"
-                             Style="width: auto"
-                             OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<CityName>>(this, HandleCityRowClick)"
-                             @bind-SelectedItems="_selectedCityNames">
-                        <HeaderContent>
-                            <MudTh Style="min-width: 60px"><MudTableSortHeader>序号</MudTableSortHeader></MudTh>
-                            <MudTh Style="min-width: 120px">键名</MudTh>
-                            @foreach (var lang in _languages)
-                            {
-                                <MudTh Style="min-width: 150px"><MudText Typo="Typo.subtitle2" Style="font-weight: 500">@lang.Value</MudText></MudTh>
-                            }
-                            <MudTh Style="min-width: 60px">操作</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="序号">@(_culture.CityNames.IndexOf(context) + 1)</MudTd>
-                            <MudTd DataLabel="键名">
-                                <MudTextField @bind-Value="@context.Key" Immediate="true" />
-                            </MudTd>
-                            @foreach (var lang in _languages)
-                            {
-                                <MudTd DataLabel="@lang.Value">
-                                    <MudTextField @bind-Value="context.Translations[lang.Key]"
-                                                @bind-Value:after="@(() => EnsureTranslationForCity(context, lang.Key))"
-                                                Immediate="true" />
-                                </MudTd>
-                            }
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                             Color="Color.Error"
-                                             OnClick="@(() => DeleteCityName(context))" />
-                            </MudTd>
-                        </RowTemplate>
+                    <MudDataGrid Items="@_culture.CityNames" Dense="true" Hover="true" Bordered="true" ReadOnly="false" EditMode="DataGridEditMode.Cell"
+                             Breakpoint="Breakpoint.Sm">
+                        <Columns>
+                            <SelectColumn />
+                            <PropertyColumn Property="x => x.Key" Title="Key" StickyLeft="true" />
+                            <PropertyColumn Property="x => x.Chinese" />
+                            <PropertyColumn Property="x => x.English" />
+                            <PropertyColumn Property="x => x.TraditionalChinese" />
+                            <PropertyColumn Property="x => x.Russian" />
+                            <PropertyColumn Property="x => x.SpanishSpain" />
+                            <PropertyColumn Property="x => x.PortugueseBrazil" />
+                            <PropertyColumn Property="x => x.German" />
+                            <PropertyColumn Property="x => x.Japanese" />
+                            <PropertyColumn Property="x => x.French" />
+                            <PropertyColumn Property="x => x.Polish" />
+                            <PropertyColumn Property="x => x.SpanishLatinAmerica" />
+                            <PropertyColumn Property="x => x.PortuguesePortugal" />
+                            <PropertyColumn Property="x => x.Korean" />
+                        </Columns>
+                        
                         <PagerContent>
                             <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }"
                                          RowsPerPageString="每页显示:"
                                          InfoFormat="{first_item}-{last_item} / {all_items}" />
                         </PagerContent>
-                    </MudTable>
+                    </MudDataGrid>
                 </MudTabPanel>
 
                 <MudTabPanel Text="国家名称">
@@ -110,48 +95,31 @@ else
                             添加国家名称
                         </MudButton>
                     </MudToolBar>
-                    <MudTable Items="@_culture.StateNames" Dense="true" Hover="true"
-                             Breakpoint="Breakpoint.Sm"
-                             Pagination="true"
-                             MultiSelection="true"
-                             RowStyle="cursor: pointer"
-                             Style="width: auto"
-                              OnRowClick="EventCallback.Factory.Create<TableRowClickEventArgs<StateName>>(this, HandleStateRowClick)"
-                             @bind-SelectedItems="_selectedStateNames">
-                        <HeaderContent>
-                            <MudTh Style="min-width: 60px"><MudTableSortHeader>序号</MudTableSortHeader></MudTh>
-                            <MudTh Style="min-width: 120px">键名</MudTh>
-                            @foreach (var lang in _languages)
-                            {
-                                <MudTh Style="min-width: 150px"><MudText Typo="Typo.subtitle2" Style="font-weight: 500">@lang.Value</MudText></MudTh>
-                            }
-                            <MudTh Style="min-width: 60px">操作</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="序号">@(_culture.StateNames.IndexOf(context) + 1)</MudTd>
-                            <MudTd DataLabel="键名">
-                                <MudTextField @bind-Value="@context.Key" Immediate="true" />
-                            </MudTd>
-                            @foreach (var lang in _languages)
-                            {
-                                <MudTd DataLabel="@lang.Value">
-                                    <MudTextField @bind-Value="context.Translations[lang.Key]"
-                                                @bind-Value:after="@(() => EnsureTranslationForState(context, lang.Key))"
-                                                Immediate="true" />
-                                </MudTd>
-                            }
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                             Color="Color.Error"
-                                             OnClick="@(() => DeleteStateName(context))" />
-                            </MudTd>
-                        </RowTemplate>
+                    <MudDataGrid Items="@_culture.StateNames" Dense="true" Hover="true" Bordered="true"
+                             Breakpoint="Breakpoint.Sm">
+                        <Columns>
+                            <PropertyColumn Property="x => x.Key" Title="Key" />
+                            <PropertyColumn Property="x => x.Chinese" />
+                            <PropertyColumn Property="x => x.English" />
+                            <PropertyColumn Property="x => x.TraditionalChinese" />
+                            <PropertyColumn Property="x => x.Russian" />
+                            <PropertyColumn Property="x => x.SpanishSpain" />
+                            <PropertyColumn Property="x => x.PortugueseBrazil" />
+                            <PropertyColumn Property="x => x.German" />
+                            <PropertyColumn Property="x => x.Japanese" />
+                            <PropertyColumn Property="x => x.French" />
+                            <PropertyColumn Property="x => x.Polish" />
+                            <PropertyColumn Property="x => x.SpanishLatinAmerica" />
+                            <PropertyColumn Property="x => x.PortuguesePortugal" />
+                            <PropertyColumn Property="x => x.Korean" />
+                        </Columns>
+                        
                         <PagerContent>
                             <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }"
                                          RowsPerPageString="每页显示:"
                                          InfoFormat="{first_item}-{last_item} / {all_items}" />
                         </PagerContent>
-                    </MudTable>
+                    </MudDataGrid>
                 </MudTabPanel>
             </MudTabs>
         </MudContainer>
@@ -173,9 +141,9 @@ else
 @code {
     [Parameter] public string ModName { get; set; }
     
-    private Culture _culture;
-    private HashSet<CityName> _selectedCityNames = new();
-    private HashSet<StateName> _selectedStateNames = new();
+    private CultureModModel _culture;
+    private HashSet<TextEntry> _selectedCityNames = new();
+    private HashSet<TextEntry> _selectedStateNames = new();
     private Dictionary<string, string> _languages = new();
 
     protected override void OnInitialized()
@@ -187,37 +155,8 @@ else
     {
         try
         {
-            _culture = CultureService.GetCulture(ModName) ?? new Culture { Name = ModName };
-            
-            // 确保所有必要的集合都被初始化
-            _culture.CityNames ??= new List<CityName>();
-            _culture.PoliticalSystems ??= new List<string>();
-            _culture.StateNames ??= new List<StateName>();
+            _culture = CultureModService.GetCultureMod(ModName);
             _languages = LocalizationService.GetLanguages();
-            
-            // 确保所有国家名称都包含所有语言
-            foreach (var stateName in _culture.StateNames)
-            {
-                foreach (var lang in _languages.Keys)
-                {
-                    if (!stateName.Translations.ContainsKey(lang))
-                    {
-                        stateName.Translations[lang] = "";
-                    }
-                }
-            }
-            
-            // 确保所有城市名称都包含所有语言
-            foreach (var cityName in _culture.CityNames)
-            {
-                foreach (var lang in _languages.Keys)
-                {
-                    if (!cityName.Translations.ContainsKey(lang))
-                    {
-                        cityName.Translations[lang] = "";
-                    }
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -240,15 +179,7 @@ else
 
         if (!result.Canceled && result.Data is string cityKey && !string.IsNullOrWhiteSpace(cityKey))
         {
-            _culture.CityNames.Add(new CityName 
-            { 
-                Key = cityKey,
-                Translations = new Dictionary<string, string>
-                {
-                    { "Chinese", "" },
-                    { "English", "" }
-                }
-            });
+            _culture.CityNames.Add(new TextEntry());
             StateHasChanged();
         }
     }
@@ -286,20 +217,12 @@ else
 
         if (!result.Canceled && result.Data is string stateKey && !string.IsNullOrWhiteSpace(stateKey))
         {
-            _culture.StateNames.Add(new StateName 
-            { 
-                Key = stateKey,
-                Translations = new Dictionary<string, string>
-                {
-                    { "Chinese", "" },
-                    { "English", "" }
-                }
-            });
+            _culture.StateNames.Add(new TextEntry());
             StateHasChanged();
         }
     }
 
-    private async Task DeleteCityName(CityName cityName)
+    private async Task DeleteCityName(TextEntry cityName)
     {
         var parameters = new DialogParameters
         {
@@ -337,7 +260,7 @@ else
         }
     }
 
-    private async Task DeleteStateName(StateName stateName)
+    private async Task DeleteStateName(TextEntry stateName)
     {
         var parameters = new DialogParameters
         {
@@ -360,10 +283,13 @@ else
     {
         try
         {
-            await CultureService.SaveCultureAsync(_culture);
+            CultureModService.SaveStateNames(ModName);
+            CultureModService.SaveCityNames(ModName);
+            CultureModService.SavePoliticalSystems(ModName);
+
             EventAggregator.GetEvent<ModsChangedEvent>().Publish();
             Snackbar.Add("保存成功", Severity.Success);
-            NavigationManager.NavigateTo($"/local-mods/culture/{ModName}");
+            //NavigationManager.NavigateTo($"/local-mods/culture/{ModName}");
         }
         catch (Exception ex)
         {
@@ -433,17 +359,6 @@ else
                           .Select(k => k.Trim())
                           .Where(k => !string.IsNullOrWhiteSpace(k));
 
-            foreach (var key in keys)
-            {
-                if (!_culture.CityNames.Any(c => c.Key == key))
-                {
-                    _culture.CityNames.Add(new CityName
-                    {
-                        Key = key,
-                        Translations = _languages.ToDictionary(l => l.Key, _ => "")
-                    });
-                }
-            }
             StateHasChanged();
         }
     }
@@ -494,48 +409,8 @@ else
                           .Select(k => k.Trim())
                           .Where(k => !string.IsNullOrWhiteSpace(k));
 
-            foreach (var key in keys)
-            {
-                if (!_culture.StateNames.Any(s => s.Key == key))
-                {
-                    _culture.StateNames.Add(new StateName
-                    {
-                        Key = key,
-                        Translations = _languages.ToDictionary(l => l.Key, _ => "")
-                    });
-                }
-            }
+            
             StateHasChanged();
         }
-    }
-
-    private async Task HandleCityRowClick(TableRowClickEventArgs<CityName> args)
-    {
-        if (args?.Item == null) return;
-        
-        if (_selectedCityNames.Contains(args.Item))
-        {
-            _selectedCityNames.Remove(args.Item);
-        }
-        else
-        {
-            _selectedCityNames.Add(args.Item);
-        }
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task HandleStateRowClick(TableRowClickEventArgs<StateName> args)
-    {
-        if (args?.Item == null) return;
-        
-        if (_selectedStateNames.Contains(args.Item))
-        {
-            _selectedStateNames.Remove(args.Item);
-        }
-        else
-        {
-            _selectedStateNames.Add(args.Item);
-        }
-        await InvokeAsync(StateHasChanged);
     }
 }
