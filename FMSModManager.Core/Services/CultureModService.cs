@@ -2,8 +2,10 @@
 using CsvHelper.Configuration;
 using FMSModManager.Core.Models;
 using FMSModManager.Core.Services.Interface;
+using Force.DeepCloner;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -18,8 +20,8 @@ namespace FMSModManager.Core.Services
         private readonly string _modsPath;
         private readonly IFileService _fileService;
         private readonly SteamworkService _steamworkService;
-        public List<CultureModModel> CultureMods { get; private set; } = new List<CultureModModel>();
         private Dictionary<string, CultureModModel?> _cultureMods = new();
+
 
         public CultureModService(SteamworkService steamworkService, IFileService fileService)
         {
@@ -73,6 +75,14 @@ namespace FMSModManager.Core.Services
             return true;
         }
 
+        public bool UpdateCultureMod(string modName, CultureModModel? cultureMod)
+        {
+            if (null == cultureMod || !_cultureMods.ContainsKey(modName))
+                return false;
+            _cultureMods[modName] = cultureMod;
+            return SaveCultureMod(modName);
+        }
+
         public CultureModModel? GetCultureMod(string modName, bool isRefresh = false)
         {
             if (string.IsNullOrEmpty(modName) ||
@@ -83,42 +93,34 @@ namespace FMSModManager.Core.Services
             if (_cultureMods[modName] == null)
             {
                 var mod = new CultureModModel();
-                mod.StateNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames));
-                mod.CityNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.CityNames));
+                mod.StateNames = new ObservableCollection<TextEntry>(_fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames)));
+                mod.CityNames = new ObservableCollection<TextEntry>(_fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.CityNames)));
                 mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
                 _cultureMods[modName] = mod;
+
             }
 
             return _cultureMods[modName];
         }
 
-        public void SaveCultureMod(string modName)
+        public bool SaveCultureMod(string modName)
         {
-            var mod = _cultureMods[modName];
-            mod.StateNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames));
-            mod.CityNames = _fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.CityNames));
-            mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
-        }
-
-        public void SaveStateNames(string modName)
-        {
-            var mod = _cultureMods[modName];
-            _fileService.WriteCsv(Path.Combine(_modsPath, FileName.StateNames), mod.StateNames);
-        }
-
-        public void SaveCityNames(string modName)
-        {
-            var mod = _cultureMods[modName];
-            _fileService.WriteCsv(Path.Combine(_modsPath, FileName.CityNames), mod.CityNames);
-        }
-
-        public void SavePoliticalSystems(string modName)
-        {
-            var mod = _cultureMods[modName];
-            _fileService.WriteJson(Path.Combine(_modsPath, FileName.PoliticalSystems), new PoliticalSystemConfig() { PoliticalSystems = mod.PoliticalSystems });
+            try
+            {
+                var mod = _cultureMods[modName];
+                _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.StateNames), mod.StateNames);
+                _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.CityNames), mod.CityNames);
+                _fileService.WriteJson(Path.Combine(_modsPath, modName, FileName.PoliticalSystems), new PoliticalSystemConfig() { PoliticalSystems = mod.PoliticalSystems });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         private static class FileName
+
         {
             public const string StateNames = "StateNames.csv";
             public const string CityNames = "CityNames.csv";
@@ -127,15 +129,15 @@ namespace FMSModManager.Core.Services
 
         private class PoliticalSystemConfig
         {
-            public List<string> PoliticalSystems { get; set; } = new List<string>();
+            public ObservableCollection<string> PoliticalSystems { get; set; } = new ObservableCollection<string>();
         }
     }
 
     public class CultureModModel
     {
-        public List<TextEntry> StateNames { get; set; } = new List<TextEntry>();
-        public List<TextEntry> CityNames { get; set; } = new List<TextEntry>();
-        public List<string> PoliticalSystems { get; set; } = new List<string>();
+        public ObservableCollection<TextEntry> StateNames { get; set; } = new ObservableCollection<TextEntry>();
+        public ObservableCollection<TextEntry> CityNames { get; set; } = new ObservableCollection<TextEntry>();
+        public ObservableCollection<string> PoliticalSystems { get; set; } = new ObservableCollection<string>();
     }
 }
 

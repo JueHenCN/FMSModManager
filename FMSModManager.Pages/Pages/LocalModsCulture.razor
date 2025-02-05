@@ -129,7 +129,7 @@
         var dialog = DialogService.Show<NewCultrueDialog>("新建 Mod", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Cancelled)
+        if (!result.Canceled)
         {
             var modName = result.Data.ToString();
             try

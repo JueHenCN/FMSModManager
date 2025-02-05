@@ -20,37 +20,27 @@ namespace FMSModManager.Core.Services.Interface
         CultureModModel? GetCultureMod(string modName, bool isRefresh = false);
 
         /// <summary>
-        /// 删除指定MOD
-        /// </summary>
-        bool DeleteCultureMod(string modName);
-        
-        /// <summary>
         /// 创建新的MOD
         /// </summary>
         /// <param name="modName"></param>
         /// <returns></returns>
-
         CultureModModel CreateCultureMod(string modName);
+
+        /// <summary>
+        /// 更新MOD
+        /// </summary>
+        /// <param name="modName"></param>
+        bool UpdateCultureMod(string modName, CultureModModel? cultureMod);
+
+        /// <summary>
+        /// 删除指定MOD
+        /// </summary>
+        bool DeleteCultureMod(string modName);
 
         /// <summary>
         /// 保存文化集MOD
         /// </summary>
         /// <param name="modName"></param>
-        void SaveCultureMod(string modName);
-
-        /// <summary>
-        /// 保存州名称变更
-        /// </summary>
-        void SaveStateNames(string modName);
-
-        /// <summary>
-        /// 保存城市名称变更
-        /// </summary>
-        void SaveCityNames(string modName);
-
-        /// <summary>
-        /// 保存政治体制变更
-        /// </summary>
-        void SavePoliticalSystems(string modName);
+        bool SaveCultureMod(string modName);
     }
 }

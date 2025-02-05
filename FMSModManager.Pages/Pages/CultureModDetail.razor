@@ -2,6 +2,8 @@
 @using FMSModManager.Core.Services
 @using FMSModManager.Core.Models
 @using FMSModManager.Core.Services.Interface
+@using Force.DeepCloner
+@using System.Collections.ObjectModel
 @inject LocalizationService LocalizationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -11,7 +13,7 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
 
-@if (_culture == null)
+@if (_cultureDetail == null)
 {
     <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
 }
@@ -21,56 +23,131 @@ else
         <MudToolBar Dense="true">
             <MudSpacer />
             <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{ModName}/edit"))"
-                           StartIcon="@Icons.Material.Filled.Edit">@Lang.GetText("Edit")</MudButton>
+                @if (_isEdit)
+                {
+                    <MudButton OnClick="@(OnEditCancelClick)" StartIcon="@Icons.Material.Filled.Cancel">
+                        @Lang.GetText("Cancel")
+                    </MudButton>
+                    <MudButton OnClick="@(OnEditSaveClick)" StartIcon="@Icons.Material.Filled.Save">
+                        @Lang.GetText("Save")
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton OnClick="@(OnEditClick)" StartIcon=@Icons.Material.Filled.Edit>@Lang.GetText("Edit"))</MudButton>
+                }
             </MudButtonGroup>
         </MudToolBar>
 
+
         <MudTabs>
-            <MudTabPanel Text="城市名称">
-                <MudTable Items="@_culture.CityNames" Dense="true" Hover="true"
-                         Breakpoint="Breakpoint.Sm"
-                         @ref="_cityNamesTable"
-                         Pagination="true">
-                    <HeaderContent>
-                        <MudTh>键名</MudTh>
-                        <MudTh>中文</MudTh>
-                        <MudTh>英文</MudTh>
-                    </HeaderContent>
+            <MudTabPanel Text="国家名称">
+                <MudToolBar>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchStateNameString" Placeholder="查找Key" Adornment="Adornment.Start" Immediate="true"
+                        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+
+                </MudToolBar>
+                @if (_isEdit)
+                {
+                    <MudToolBar Dense="true" Class="mb-2">
+                        <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Disabled="@(!_selectedStateNames.Any())">
+                            删除选中项
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlaylistAdd">
+                            批量添加国家
+                        </MudButton>
+                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                            添加新的国家
+                        </MudButton>
+                    </MudToolBar>
+                }
+                <MudDataGrid 
+                    Items="@(_isEdit ? _cultureEdit.StateNames : _cultureDetail.StateNames)" 
+                    Hover="true" Dense="true" ReadOnly="!_isEdit" EditMode="DataGridEditMode.Cell"
+                    MultiSelection="true" QuickFilter="@_quickFilterStateName" 
+                    @bind-SelectedItems="@_selectedStateNames"
+                    SelectOnRowClick="false">
+                    <Columns>
+                        @if (_isEdit)
+                        {
+                            <SelectColumn T="TextEntry" />
+                        }
+                        <PropertyColumn Property="x => x.Key" Title="Key"/>
+                        <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.English" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.TraditionalChinese" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Russian" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.SpanishSpain" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.PortugueseBrazil" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.German" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Japanese" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.French" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Polish" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.SpanishLatinAmerica" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.PortuguesePortugal" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Korean" Required="false" Sortable="false"/>
+                    </Columns>
+
                     <PagerContent>
-                        <MudTablePager PageSizeOptions="pageList"
-                                     RowsPerPageString="每页显示:"
-                                     InfoFormat="{first_item}-{last_item} / {all_items}" />
+                        <MudDataGridPager T="TextEntry" RowsPerPageString="每页显示" />
                     </PagerContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="键名">@context.Key</MudTd>
-                        <MudTd DataLabel="中文">@context.Chinese</MudTd>
-                        <MudTd DataLabel="英文">@context.English</MudTd>
-                    </RowTemplate>
-                </MudTable>
+                </MudDataGrid>
             </MudTabPanel>
 
-            <MudTabPanel Text="国家名称">
-                <MudTable Items="@_culture.StateNames" Dense="true" Hover="true"
-                         Breakpoint="Breakpoint.Sm"
-                         @ref="_stateNamesTable"
-                         Pagination="true">
-                    <HeaderContent>
-                        <MudTh>键名</MudTh>
-                        <MudTh>中文</MudTh>
-                        <MudTh>英文</MudTh>
-                    </HeaderContent>
+            <MudTabPanel Text="城市名称">
+                <MudToolBar>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchCityNameString" Placeholder="查找Key" Adornment="Adornment.Start" Immediate="true"
+                        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </MudToolBar>
+                @if (_isEdit)
+                {
+                    <MudToolBar Dense="true" Class="mb-2">
+                        <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Disabled="@(!_selectedCityNames.Any())">
+                            删除选中项
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlaylistAdd">
+                            批量添加城市
+                        </MudButton>
+                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                            添加新的城市
+                        </MudButton>
+                    </MudToolBar>
+                }
+                <MudDataGrid 
+                    Items="@(_isEdit ? _cultureEdit.CityNames : _cultureDetail.CityNames)" 
+                    Hover="true" Dense="true" ReadOnly="!_isEdit" EditMode="DataGridEditMode.Cell"
+                    MultiSelection="true" QuickFilter="@_quickFilterCityName" 
+                    @bind-SelectedItems="@_selectedCityNames"
+                    SelectOnRowClick="false">
+                    <Columns>
+                        @if (_isEdit)
+                        {
+                            <SelectColumn T="TextEntry"/>
+                        }
+                        <PropertyColumn Property="x => x.Key" Title="Key"/>
+                        <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.English" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.TraditionalChinese" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Russian" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.SpanishSpain" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.PortugueseBrazil" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.German" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Japanese" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.French" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Polish" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.SpanishLatinAmerica" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.PortuguesePortugal" Required="false" Sortable="false"/>
+                        <PropertyColumn Property="x => x.Korean" Required="false" Sortable="false"/>
+                    </Columns>
+
                     <PagerContent>
-                        <MudTablePager PageSizeOptions="pageList"
-                                     RowsPerPageString="每页显示:"
-                                     InfoFormat="{first_item}-{last_item} / {all_items}" />
+                        <MudDataGridPager T="TextEntry" RowsPerPageString="每页显示" />
                     </PagerContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="键名">@context.Key</MudTd>
-                        <MudTd DataLabel="中文">@context.Chinese</MudTd>
-                        <MudTd DataLabel="英文">@context.English</MudTd>
-                    </RowTemplate>
-                </MudTable>
+                </MudDataGrid>
             </MudTabPanel>
         </MudTabs>
     </MudPaper>
@@ -78,12 +155,36 @@ else
 
 @code {
     [Parameter] public string ModName { get; set; }
-    
-    private CultureModModel _culture;
-    private MudTable<TextEntry> _cityNamesTable;
-    private MudTable<TextEntry> _stateNamesTable;
+
+    private bool _isEdit = false;
+    private string _searchStateNameString = "";
+    private string _searchCityNameString = "";
+    private CultureModModel? _cultureDetail;
+    private CultureModModel? _cultureEdit;
+    private HashSet<TextEntry> _selectedCityNames = new HashSet<TextEntry>();
+    private HashSet<TextEntry> _selectedStateNames = new HashSet<TextEntry>();
+
     private int[] pageList = new int[] { 10, 20, 50, 100 };
-    
+
+    private Func<TextEntry, bool> _quickFilterStateName => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchStateNameString))
+            return true;
+        
+        if (x.Key.Contains(_searchStateNameString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    };
+
+    private Func<TextEntry, bool> _quickFilterCityName => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchCityNameString))
+            return true;
+        
+        if (x.Key.Contains(_searchCityNameString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    };
 
     protected override void OnInitialized()
     {
@@ -101,23 +202,47 @@ else
         StateHasChanged();
     }
 
+
+
+    private void OnEditClick()
+    {
+        _isEdit = true;
+        _cultureEdit = CultureModService.GetCultureMod(ModName).DeepClone();
+    }
+
+    private void OnEditCancelClick()
+    {
+        _isEdit = false;
+    }
+
+    private void OnEditSaveClick()
+    {
+        try
+        {
+            // 检查重复Key
+            var duplicateKey = _cultureEdit?.StateNames.GroupBy(x => x.Key).Where(g => g.Count() > 1).Select(g => g.Key).FirstOrDefault();
+            if (duplicateKey != null)
+            {
+                Snackbar.Add($"Key重复: {duplicateKey}", Severity.Error);
+                return;
+            }
+            
+            _isEdit = false;
+            CultureModService.UpdateCultureMod(ModName, _cultureEdit);
+            _cultureDetail = _cultureEdit;
+            Snackbar.Add("保存成功", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"保存失败: {ex.Message}", Severity.Error);
+        }
+    }
+
     private void LoadData()
     {
         try
         {
-            _culture = CultureModService.GetCultureMod(ModName);
-            if (_cityNamesTable != null)
-            {
-                var currentRowsPerPage = _cityNamesTable.RowsPerPage;
-                StateHasChanged();
-                _cityNamesTable.RowsPerPage = currentRowsPerPage;
-            }
-            if (_stateNamesTable != null)
-            {
-                var currentRowsPerPage = _stateNamesTable.RowsPerPage;
-                StateHasChanged();
-                _stateNamesTable.RowsPerPage = currentRowsPerPage;
-            }
+            _cultureDetail = CultureModService.GetCultureMod(ModName).DeepClone();
         }
         catch (Exception ex)
         {
