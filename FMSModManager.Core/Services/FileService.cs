@@ -68,6 +68,14 @@ namespace FMSModManager.Core.Services
             return csv.GetRecords<T>().ToList();
         }
 
+        public List<T> ReadCsvString<T>(string csvString, CsvConfiguration? config = null)
+        {
+            var finalConfig = config ?? _defaultCsvConfig;
+            using var reader = new StringReader(csvString);
+            using var csv = new CsvReader(reader, finalConfig);
+            return csv.GetRecords<T>().ToList();
+        }
+
         public void WriteCsv<T>(string filePath, IEnumerable<T> records, CsvConfiguration? config = null)
         {
             var finalConfig = config ?? _defaultCsvConfig;
@@ -78,6 +86,14 @@ namespace FMSModManager.Core.Services
             csv.WriteRecords(records);
         }
 
+        public string ConvertCsvToString<T>(IEnumerable<T> records, CsvConfiguration? config = null)
+        {
+            var finalConfig = config ?? _defaultCsvConfig;
+            using var writer = new StringWriter();
+            using var csv = new CsvWriter(writer, finalConfig);
+            csv.WriteRecords(records);
+            return writer.ToString();
+        }
         private string InitializeCsvHeader<T>()
         {
             using var writer = new StringWriter();
@@ -103,5 +119,15 @@ namespace FMSModManager.Core.Services
                             JsonSerializer.Serialize(data, finalOptions),
                             _defaultEncoding);
         }
+
+        // ==================== 文件夹处理 ====================
+        public void DeleteDirectory(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
+        }
     }
 }
+

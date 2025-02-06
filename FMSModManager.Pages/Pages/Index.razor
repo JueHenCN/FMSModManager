@@ -18,9 +18,6 @@
                     <CardHeaderContent>
                         <MudText Typo="Typo.h5">@Lang.GetText("ReligionMod", "Index")</MudText>
                     </CardHeaderContent>
-                    <CardHeaderActions>
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="CreateNewReligionMod"/>
-                    </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
                     <MudText>@Lang.GetText("ReligionModDescription", "Index")</MudText>
@@ -42,10 +39,6 @@
                     <CardHeaderContent>
                         <MudText Typo="Typo.h5">@Lang.GetText("CultureMod", "Index")</MudText>
                     </CardHeaderContent>
-                    <CardHeaderActions>
-
-                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"/>
-                    </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
                     <MudText>@Lang.GetText("CultureModDescription", "Index")</MudText>
@@ -75,39 +68,5 @@
     private void LanguageChangedFunc(string language)
     {
         StateHasChanged();
-    }
-
-    private async Task CreateNewReligionMod()
-
-    {
-        var parameters = new DialogParameters
-        {
-            { "IsNew", true },
-            { "ModName", "" },
-            { "Religions", new List<Religion>() }
-        };
-
-        var dialog = await DialogService.ShowAsync<ReligionModDialog>(Lang.GetText("CreateNewReligionMod", "Index"), parameters);
-        var result = await dialog.Result;
-
-
-        if (!result.Canceled)
-        {
-            try
-            {
-                var data = (dynamic)result.Data;
-                ReligionService.WriteReligion(data.ModName, data.Data);
-                Snackbar.Add(Lang.GetText("ModCreatedSuccessfully", "Index"), Severity.Success);
-                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
-                await Task.Delay(100);
-                NavigationManager.NavigateTo($"/local-mods/religion/{data.ModName}");
-
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(Lang.GetText("CreateFailed", "Index") + ": " + ex.Message, Severity.Error);
-            }
-
-        }
     }
 } 

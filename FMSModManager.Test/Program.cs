@@ -1,4 +1,9 @@
-﻿using FMSModManager.Core.Services;
+﻿using System.Globalization;
+using System.Text.Json;
+using CsvHelper.Configuration;
+using CsvHelper;
+using FMSModManager.Core.Models;
+using FMSModManager.Core.Services;
 using Prism.Events;
 
 namespace FMSModManager.Test
@@ -14,18 +19,35 @@ namespace FMSModManager.Test
 
             //mod.LoadCultureMod();
 
-            var eventAggregator = new EventAggregator();
-            var fileService = new FileService();
-            var local = new LocalConfigService(new SteamworkService(eventAggregator), fileService, eventAggregator);
-            var lang = new LanguageService(local,fileService,eventAggregator);
+            //var eventAggregator = new EventAggregator();
+            //var fileService = new FileService();
+            //var local = new LocalConfigService(new SteamworkService(eventAggregator), fileService, eventAggregator);
+            //var lang = new LanguageService(local,fileService,eventAggregator);
 
-            var editValue1 = lang.GetText("Edit");
-            Console.WriteLine(editValue1);
-            lang.UpdateLanguage("简体中文");
-            var editValue2 = lang.GetText("Edit");
-            Console.WriteLine(editValue2);
+            //var editValue1 = lang.GetText("Edit");
+            //Console.WriteLine(editValue1);
+            //lang.UpdateLanguage("简体中文");
+            //var editValue2 = lang.GetText("Edit");
+            //Console.WriteLine(editValue2);
+
+            TestJsonString();
 
             Console.ReadLine();
+        }
+
+        static void TestJsonString()
+        {
+
+            string csvString = "Key1,value1,value2\rKey2,value3";
+            using (var reader = new StringReader(csvString))
+            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                MissingFieldFound = null, // 忽略缺失字段
+                HeaderValidated = null    // 跳过标题验证
+            }))
+            {
+                var list = csv.GetRecords<TextEntity>().ToList();
+            }
         }
     }
 }

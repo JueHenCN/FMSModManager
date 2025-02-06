@@ -56,9 +56,10 @@ namespace FMSModManager.Core.Services
 
         {
             var mod = new CultureModModel();
-            mod.CityNames.Add(new TextEntry() { Key = "TestKey", Chinese = "新的城市", English = "New City" });
-            mod.StateNames.Add(new TextEntry() { Key = "TestKey", Chinese = "新的国家", English = "New State" });
+            mod.CityNames.Add(new TextEntity() { Key = "TestKey", Chinese = "新的城市", English = "New City" });
+            mod.StateNames.Add(new TextEntity() { Key = "TestKey", Chinese = "新的国家", English = "New State" });
             mod.PoliticalSystems.Add("Kingdom");
+            mod.PoliticalSystems.Add("Empire");
             _cultureMods.Add(modName, mod);
             _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.StateNames), mod.StateNames);
             _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.CityNames), mod.CityNames);
@@ -69,11 +70,20 @@ namespace FMSModManager.Core.Services
 
         public bool DeleteCultureMod(string modName)
         {
-            if (!_cultureMods.ContainsKey(modName))
+            try
+            {
+                if (!_cultureMods.ContainsKey(modName))
+                    return false;
+                _fileService.DeleteDirectory(Path.Combine(_modsPath, modName));
+                _cultureMods.Remove(modName);
+                return true;
+            }
+            catch (Exception ex)
+            {
                 return false;
-            _cultureMods.Remove(modName);
-            return true;
+            }
         }
+
 
         public bool UpdateCultureMod(string modName, CultureModModel? cultureMod)
         {
@@ -93,8 +103,8 @@ namespace FMSModManager.Core.Services
             if (_cultureMods[modName] == null)
             {
                 var mod = new CultureModModel();
-                mod.StateNames = new ObservableCollection<TextEntry>(_fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.StateNames)));
-                mod.CityNames = new ObservableCollection<TextEntry>(_fileService.ReadCsv<TextEntry>(Path.Combine(_modsPath, modName, FileName.CityNames)));
+                mod.StateNames = new ObservableCollection<TextEntity>(_fileService.ReadCsv<TextEntity>(Path.Combine(_modsPath, modName, FileName.StateNames)));
+                mod.CityNames = new ObservableCollection<TextEntity>(_fileService.ReadCsv<TextEntity>(Path.Combine(_modsPath, modName, FileName.CityNames)));
                 mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
                 _cultureMods[modName] = mod;
 
@@ -135,8 +145,8 @@ namespace FMSModManager.Core.Services
 
     public class CultureModModel
     {
-        public ObservableCollection<TextEntry> StateNames { get; set; } = new ObservableCollection<TextEntry>();
-        public ObservableCollection<TextEntry> CityNames { get; set; } = new ObservableCollection<TextEntry>();
+        public ObservableCollection<TextEntity> StateNames { get; set; } = new ObservableCollection<TextEntity>();
+        public ObservableCollection<TextEntity> CityNames { get; set; } = new ObservableCollection<TextEntity>();
         public ObservableCollection<string> PoliticalSystems { get; set; } = new ObservableCollection<string>();
     }
 }

@@ -1,13 +1,20 @@
 {
   "Common": {
-    "Save": "保存",
-    "Cancel": "取消",
-    "Delete": "删除",
-    "Edit": "编辑",
     "Add": "添加",
+    "Edit": "编辑",
+    "Save": "保存",
+    "Open": "打开",
+    "Close": "关闭",
+    "Delete": "删除",
     "Confirm": "确认",
+    "Cancel": "取消",
     "Success": "成功",
-    "Error": "错误"
+    "Failed": "失败",
+    "Error": "错误",
+    "NoData": "没有数据",
+    "Operation": "操作",
+    "Culture": "文化集",
+    "Religion": "宗教"
   },
 
   "Main":{
@@ -16,7 +23,6 @@
     "About": "关于",
     "AboutDescription": "架空地图模拟器MOD管理器是一款用于管理架空地图模拟器MOD的工具。"
   },
-
 
   "NavMenu": {
     "Home": "主页",
@@ -42,8 +48,29 @@
   },
 
   "LocalModsCulture": {
-    
+    "Title": "本地文化集 Mod 管理",
+    "InstalledCultureMods": "已安装的文化集 Mod",
+    "CreateNewMod": "新建 Mod",
+    "NoCultureModsFound": "未找到任何文化集 Mod",
+    "ModName": "Mod 名称",
+    "CityCount": "城市数量",
+    "PoliticalSystemCount": "政治体系数量",
+    "StateNameCount": "国家数量",
+    "CreateNewCultureMod": "新建文化集Mod",
+    "CreateSuccess": "创建成功",
+    "CreateFailed": "创建失败",
+    "ConfirmDelete": "确认删除",
+    "ConfirmDeleteMessage": "是否确定删除",
+    "ThisOperationCannotBeRestored": "此操作不可恢复",
+    "Delete": "删除",
+    "Cancel": "取消",
+    "DeleteSuccess": "删除成功",
+    "DeleteFailed": "删除失败",
+    "ModNameNull": "Mod 名称不能为空",
+    "ModNameExists": "Mod 名称已存在"
+
   },
+
 
   "Religion": {
     "Title": "宗教 Mod",
@@ -59,6 +86,10 @@
     "Localization": "本地化"
   },
 
+  "$CultureModDetail": {
+
+  },
+
   "Culture": {
     "Title": "文化 Mod",
     "Description": "创建或管理游戏中的文化系统，包括文化名称、文化特征、文化习俗等内容",
@@ -66,5 +97,12 @@
     "CreateNew": "新建 Mod",
     "NoCultures": "当前 Mod 中没有文化信息",
     "AddNewCulture": "添加新文化"
+  },
+
+  "InputTextDialog": {
+    "Required": "请输入文本",
+    "RequiredError": "文本不能为空"
   }
+
+
 } 

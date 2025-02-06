@@ -1,0 +1,135 @@
+﻿@using CsvHelper.Configuration
+@using FMSModManager.Core.Events
+@using FMSModManager.Core.Models
+@using System.Collections.ObjectModel
+@using System.Text
+@using System.Text.Json
+@using FMSModManager.Core.Services.Interface
+@using System.Globalization
+@inject LanguageService Lang
+@inject IEventAggregator EventAggregator
+
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@DialogTitle</MudText>
+    </TitleContent>
+
+
+    <DialogActions>
+        <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="Cancel">@Lang.GetText("Cancel")</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Text" Disabled="@(!_textEntitys.Any())" OnClick="Submit">
+            @Lang.GetText("Confirm")</MudButton>
+
+    </DialogActions>
+
+    <DialogContent>
+        <MudToolBar Dense="true" Class="mb-2">
+            <MudSwitch @bind-Value="_isBatchAdd" @bind-Value:after="() => OnBatchAddChanged(_isBatchAdd)"
+                Color="Color.Primary">批量添加</MudSwitch>
+            <MudSpacer />
+            <MudButton Color="Color.Primary" Disabled="@(_isBatchAdd)" StartIcon="@Icons.Material.Filled.Add"
+                OnClick="@(OnAddClick)">
+                @Lang.GetText("Add")
+            </MudButton>
+
+        </MudToolBar>
+
+        @if (_isBatchAdd)
+        {
+            <MudTextField @bind-Value="_inputText" Label="@ContentText" Lines="3" Required="true" Variant="Variant.Outlined"
+                TextChanged="RefreshTextEntitys" RequiredError="@Lang.GetText("RequiredError", "InputTextDialog")"
+                Immediate="true" />
+        }
+
+        <MudDataGrid Items="_textEntitys" Hover="true" Dense="true" ReadOnly="_isBatchAdd"
+            EditMode="DataGridEditMode.Cell" MultiSelection="true" Height="300px">
+            <Columns>
+                <PropertyColumn Property="x => x.Key" Title="Key" Sortable="false" />
+                <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.English" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.TraditionalChinese" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.Russian" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.SpanishSpain" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.PortugueseBrazil" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.German" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.Japanese" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.French" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.Polish" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.SpanishLatinAmerica" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.PortuguesePortugal" Required="false" Sortable="false" />
+                <PropertyColumn Property="x => x.Korean" Required="false" Sortable="false" />
+            </Columns>
+        </MudDataGrid>
+    </DialogContent>
+
+</MudDialog>
+
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string DialogTitle { get; set; }
+    [Parameter] public string ContentText { get; set; }
+
+    [Inject]
+    public IFileService FileService { get; set; }
+
+    private ObservableCollection<TextEntity> _textEntitys = new();
+
+    private bool _isBatchAdd = false;
+
+    private string _inputText;
+
+    void Cancel() => MudDialog.Cancel();
+    void Submit() => MudDialog.Close(DialogResult.Ok(_textEntitys));
+
+    private void OnAddClick()
+    {
+        var newEntity = new TextEntity() { Key = "NewKey", Chinese = "New Chinese", English = "New English" };
+        _textEntitys.Add(newEntity);
+    }
+
+    private void OnBatchAddChanged(bool value)
+    {
+        if (value)
+        {
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                MissingFieldFound = null,
+                PrepareHeaderForMatch = args => args.Header.Trim().ToLower(),
+                IgnoreBlankLines = true,
+                Encoding = Encoding.UTF8,
+                HasHeaderRecord = false
+            };
+            _inputText = FileService.ConvertCsvToString(_textEntitys, config);
+        }
+    }
+
+    private void RefreshTextEntitys()
+    {
+        _textEntitys.Clear();
+
+        if (string.IsNullOrEmpty(_inputText)) return;
+        var entityValues = new StringBuilder();
+        entityValues.Append("Key, Chinese, English, TraditionalChinese, Russian, SpanishSpain, PortugueseBrazil,");
+        entityValues.AppendLine("German, Japanese, French, Polish, SpanishLatinAmerica, PortuguesePortugal, Korean,");
+        entityValues.Append(_inputText);
+
+        var entitys = FileService.ReadCsvString<TextEntity>(entityValues.ToString());
+
+        _textEntitys = new(entitys);
+    }
+
+    protected override void OnInitialized()
+    {
+        EventAggregator.GetEvent<LanguageChangedEvent>().Subscribe(OnLanguageChanged);
+    }
+
+    private void OnLanguageChanged(string language)
+    {
+        StateHasChanged();
+    }
+
+
+}

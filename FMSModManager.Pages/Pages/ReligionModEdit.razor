@@ -1,5 +1,6 @@
 @page "/local-mods/religion/{ModName}/edit"
 @using FMSModManager.Core.Services
+@using FMSModManager.Pages.Pages.Components
 @using Prism.Events
 @using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
@@ -214,7 +215,7 @@ else
             { "Color", Color.Primary }
         };
 
-        var dialog = DialogService.Show<InputDialog>("添加新宗教", dialogParameters);
+        var dialog = DialogService.Show<InputTextDialog>("添加新宗教", dialogParameters);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is string religionKey && !string.IsNullOrWhiteSpace(religionKey))

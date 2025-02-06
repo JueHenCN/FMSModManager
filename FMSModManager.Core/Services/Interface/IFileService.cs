@@ -16,10 +16,15 @@ namespace FMSModManager.Core.Services.Interface
 
         // CSV处理
         List<T> ReadCsv<T>(string filePath, CsvConfiguration? config = null);
+        List<T> ReadCsvString<T>(string csvString, CsvConfiguration? config = null);
         void WriteCsv<T>(string filePath, IEnumerable<T> records, CsvConfiguration? config = null);
+        string ConvertCsvToString<T>(IEnumerable<T> records, CsvConfiguration? config = null);
 
         // JSON处理
         T ReadJson<T>(string filePath);
         void WriteJson<T>(string filePath, T data, JsonSerializerOptions? options = null);
+
+        // 文件夹处理
+        void DeleteDirectory(string path);
     }
 }

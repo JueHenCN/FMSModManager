@@ -10,21 +10,24 @@
 @inject NavigationManager NavigationManager
 @inject IEventAggregator EventAggregator
 @inject ICultureModService CultureModService
+@inject LanguageService Lang
 
-<MudText Typo="Typo.h3" Class="mb-4">本地文化 Mod 管理</MudText>
+<MudText Typo="Typo.h3" Class="mb-4">@Lang.GetText("Title", "LocalModsCulture")</MudText>
+
 
 <MudGrid>
     <MudItem xs="12">
         <MudPaper Class="pa-4">
             <MudToolBar Dense="true">
-                <MudText Typo="Typo.h5">已安装的文化 Mod</MudText>
+                <MudText Typo="Typo.h5">@Lang.GetText("InstalledCultureMods", "LocalModsCulture")</MudText>
                 <MudSpacer />
                 <MudButton Color="Color.Primary" 
                 StartIcon="@Icons.Material.Filled.Add"
                 OnClick="CreateNewMod">
-                    新建 Mod
+                    @Lang.GetText("CreateNewMod", "LocalModsCulture")
                 </MudButton>
             </MudToolBar>
+
 
             @if (_cultures == null)
             {
@@ -32,56 +35,62 @@
             }
             else if (!_cultures.Any())
             {
-                <MudAlert Severity="Severity.Info">未找到任何文化 Mod</MudAlert>
+                <MudAlert Severity="Severity.Info">@Lang.GetText("NoCultureModsFound", "LocalModsCulture")</MudAlert>
             }
             else
+
             {
                 <MudTable Items="@_cultures" Dense="true" Hover="true">
                     <HeaderContent>
-                        <MudTh>Mod 名称</MudTh>
-                        <MudTh>城市数量</MudTh>
-                        <MudTh>政治体系数量</MudTh>
-                        <MudTh>州名数量</MudTh>
-                        <MudTh>操作</MudTh>
+                        <MudTh>@Lang.GetText("ModName", "LocalModsCulture")</MudTh>
+                        <MudTh>@Lang.GetText("CityCount", "LocalModsCulture")</MudTh>
+                        <MudTh>@Lang.GetText("PoliticalSystemCount", "LocalModsCulture")</MudTh>
+                        <MudTh>@Lang.GetText("StateNameCount", "LocalModsCulture")</MudTh>
+                        <MudTh>@Lang.GetText("Operation")</MudTh>
+
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd DataLabel="Mod 名称">@context</MudTd>
-                        <MudTd DataLabel="城市数量">
+                        <MudTd DataLabel="@Lang.GetText("ModName", "LocalModsCulture")">@context</MudTd>
+                        <MudTd DataLabel="@Lang.GetText("CityCount", "LocalModsCulture")">
                             @try
+
                             {
                                 @(CultureModService.GetCultureMod(context)?.CityNames.Count ?? 0)
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error")</MudChip>
                             }
                         </MudTd>
-                        <MudTd DataLabel="政治体系数量">
+                        <MudTd DataLabel="@Lang.GetText("PoliticalSystemCount", "LocalModsCulture")">
+
                             @try
+
                             {
                                 @(CultureModService.GetCultureMod(context)?.PoliticalSystems.Count ?? 0)
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error")</MudChip>
                             }
                         </MudTd>
-                        <MudTd DataLabel="州名数量">
+                        <MudTd DataLabel="@Lang.GetText("StateNameCount", "LocalModsCulture")">
+
                             @try
                             {
                                 @(CultureModService.GetCultureMod(context)?.StateNames.Count ?? 0)
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error")</MudChip>
                             }
                         </MudTd>
                         <MudTd>
                             <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}"))">查看</MudButton>
-                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}/edit"))">编辑</MudButton>
-                                <MudButton Color="Color.Error" OnClick="@(() => DeleteCulture(context))">删除</MudButton>
+                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}"))">@Lang.GetText("Open")</MudButton>
+                                <MudButton Color="Color.Error" OnClick="@(() => DeleteCulture(context))">@Lang.GetText("Delete")</MudButton>
                             </MudButtonGroup>
+
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -99,11 +108,19 @@
     {
         LoadCultures(); // 新增此行
         EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(LoadCultures);
+        EventAggregator.GetEvent<LanguageChangedEvent>().Subscribe(LanguageChangedFunc);
     }
+
+    private void LanguageChangedFunc(string language)
+    {
+        StateHasChanged();
+    }
+
 
     public void Dispose()
     {
         EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(LoadCultures);
+        EventAggregator.GetEvent<LanguageChangedEvent>().Unsubscribe(LanguageChangedFunc);
     }
 
     private void LoadCultures()
@@ -117,7 +134,12 @@
 
     private async Task CreateNewMod()
     {
-        var parameters = new DialogParameters();
+        var parameters = new DialogParameters()
+        {
+            { "DialogTitle", Lang.GetText("CreateNewCultureMod", "LocalModsCulture") },
+            { "ContentText", Lang.GetText("CreateNewCultureMod", "LocalModsCulture") }
+        };
+
 
         var options = new DialogOptions()
             {
@@ -126,61 +148,75 @@
                 FullWidth = true
             };
 
-        var dialog = DialogService.Show<NewCultrueDialog>("新建 Mod", parameters, options);
+        var dialog = DialogService.Show<InputTextDialog>($"{Lang.GetText("Create")} Mod", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
             var modName = result.Data.ToString();
+            if (string.IsNullOrWhiteSpace(modName))
+            {
+                Snackbar.Add(Lang.GetText("ModNameNull", "LocalModsCulture"), Severity.Error);
+                return;
+            }
+            if(_cultures.Contains(modName))
+            {
+                Snackbar.Add(Lang.GetText("ModNameExists", "LocalModsCulture"), Severity.Error);
+                return;
+            }
             try
             {
-                // 调用服务创建新 Mod
                 var createResult = CultureModService.CreateCultureMod(modName);
 
                 if (createResult != null)
                 {
-                    Snackbar.Add($"'{modName}' 创建成功", Severity.Success);
+                    Snackbar.Add($"{Lang.GetText("CreateSuccess", "LocalModsCulture")}", Severity.Success);
                     EventAggregator.GetEvent<ModsChangedEvent>().Publish();
-                    //NavigationManager.NavigateTo($"/local-mods/culture/{modName}/detail");
+                    NavigationManager.NavigateTo($"/local-mods/culture/{modName}");
                 }
                 else
                 {
-                    Snackbar.Add("创建失败，请检查日志", Severity.Error);
+                    Snackbar.Add($"{Lang.GetText("CreateFailed", "LocalModsCulture")}", Severity.Error);
                 }
+
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"创建失败: {ex.Message}", Severity.Error);
+                Snackbar.Add($"{Lang.GetText("CreateFailed", "LocalModsCulture")}: {ex.Message}", Severity.Error);
             }
+
         }
         
     }
 
     private async Task DeleteCulture(string modName)
     {
-        bool? result = await DialogService.ShowMessageBox(
-            "确认删除",
-            $"确定要删除 {modName} 吗？此操作不可恢复。",
-            yesText: "删除",
-            noText: "取消"
-        );
+        var parameters = new DialogParameters()
+        {
+            { "ContentText", $"{Lang.GetText("ConfirmDeleteMessage", "LocalModsCulture")} {modName}? {Lang.GetText("ThisOperationCannotBeRestored", "LocalModsCulture")}" },
+            { "Color", Color.Error }
+        };
 
-        if (result ?? false)
+        var dialog = DialogService.Show<DeleteDialog>($"{Lang.GetText("Delete")} Mod", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
         {
             try
             {
                 var delResult = CultureModService.DeleteCultureMod(modName);
                 if (delResult)
-                    Snackbar.Add("Mod 删除成功", Severity.Success);
+                    Snackbar.Add(Lang.GetText("DeleteSuccess", "LocalModsCulture"), Severity.Success);
                 else
-                    Snackbar.Add("Mod 删除失败", Severity.Error);
+                    Snackbar.Add(Lang.GetText("DeleteFailed", "LocalModsCulture"), Severity.Error);
                 EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+
             }
             catch (Exception ex)
-
             {
-                Snackbar.Add($"删除失败: {ex.Message}", Severity.Error);
+                Snackbar.Add($"{Lang.GetText("DeleteFailed", "LocalModsCulture")}: {ex.Message}", Severity.Error);
             }
+
         }
     }
 }

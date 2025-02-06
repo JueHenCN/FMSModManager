@@ -1,15 +1,18 @@
 ﻿@page "/local-mods/culture/{ModName}"
+@using FMSModManager.Core.Events
 @using FMSModManager.Core.Services
 @using FMSModManager.Core.Models
 @using FMSModManager.Core.Services.Interface
+@using FMSModManager.Pages.Pages.Components
 @using Force.DeepCloner
 @using System.Collections.ObjectModel
-@inject LocalizationService LocalizationService
+@inject IEventAggregator EventAggregator
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
-@inject LanguageService Lang
 @inject ICultureModService CultureModService
+@inject LanguageService Lang
+
 
 <MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
 
@@ -41,7 +44,7 @@ else
 
 
         <MudTabs>
-            <MudTabPanel Text="国家名称">
+            <MudTabPanel Text="@Lang.GetText("StateName", "CultureModDetail")">
                 <MudToolBar>
                     <MudSpacer />
                     <MudTextField @bind-Value="_searchStateNameString" Placeholder="查找Key" Adornment="Adornment.Start" Immediate="true"
@@ -55,10 +58,7 @@ else
                             删除选中项
                         </MudButton>
                         <MudSpacer />
-                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlaylistAdd">
-                            批量添加国家
-                        </MudButton>
-                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(OnAddNewStateNameClick)">
                             添加新的国家
                         </MudButton>
                     </MudToolBar>
@@ -72,7 +72,7 @@ else
                     <Columns>
                         @if (_isEdit)
                         {
-                            <SelectColumn T="TextEntry" />
+                            <SelectColumn T="TextEntity" />
                         }
                         <PropertyColumn Property="x => x.Key" Title="Key"/>
                         <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false"/>
@@ -91,7 +91,7 @@ else
                     </Columns>
 
                     <PagerContent>
-                        <MudDataGridPager T="TextEntry" RowsPerPageString="每页显示" />
+                        <MudDataGridPager T="TextEntity" RowsPerPageString="每页显示" />
                     </PagerContent>
                 </MudDataGrid>
             </MudTabPanel>
@@ -109,9 +109,6 @@ else
                             删除选中项
                         </MudButton>
                         <MudSpacer />
-                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlaylistAdd">
-                            批量添加城市
-                        </MudButton>
                         <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
                             添加新的城市
                         </MudButton>
@@ -126,7 +123,7 @@ else
                     <Columns>
                         @if (_isEdit)
                         {
-                            <SelectColumn T="TextEntry"/>
+                            <SelectColumn T="TextEntity"/>
                         }
                         <PropertyColumn Property="x => x.Key" Title="Key"/>
                         <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false"/>
@@ -145,7 +142,7 @@ else
                     </Columns>
 
                     <PagerContent>
-                        <MudDataGridPager T="TextEntry" RowsPerPageString="每页显示" />
+                        <MudDataGridPager T="TextEntity" RowsPerPageString="每页显示" />
                     </PagerContent>
                 </MudDataGrid>
             </MudTabPanel>
@@ -161,12 +158,12 @@ else
     private string _searchCityNameString = "";
     private CultureModModel? _cultureDetail;
     private CultureModModel? _cultureEdit;
-    private HashSet<TextEntry> _selectedCityNames = new HashSet<TextEntry>();
-    private HashSet<TextEntry> _selectedStateNames = new HashSet<TextEntry>();
+    private HashSet<TextEntity> _selectedCityNames = new HashSet<TextEntity>();
+    private HashSet<TextEntity> _selectedStateNames = new HashSet<TextEntity>();
 
     private int[] pageList = new int[] { 10, 20, 50, 100 };
 
-    private Func<TextEntry, bool> _quickFilterStateName => x =>
+    private Func<TextEntity, bool> _quickFilterStateName => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchStateNameString))
             return true;
@@ -176,7 +173,7 @@ else
         return false;
     };
 
-    private Func<TextEntry, bool> _quickFilterCityName => x =>
+    private Func<TextEntity, bool> _quickFilterCityName => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchCityNameString))
             return true;
@@ -186,23 +183,39 @@ else
         return false;
     };
 
+    private async void OnAddNewStateNameClick()
+    {
+        var parameters = new DialogParameters()
+        {
+            { "DialogTitle", "添加新的国家" },
+            { "ContentText", "添加新的国家" }
+        };
+        var dialog = DialogService.Show<AddNewTextEntityDialog>("添加新的国家", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data != null)
+        {
+            var data = result.Data as ObservableCollection<TextEntity>;
+            foreach (var item in data)
+            {
+                _cultureEdit.StateNames.Add(item);
+            }
+            StateHasChanged();
+        }
+    }
+
     protected override void OnInitialized()
     {
         LoadData();
+        EventAggregator.GetEvent<LanguageChangedEvent>().Subscribe(OnLanguageChanged);
     }
 
-    protected override void OnParametersSet()
-    {
-        LoadData();
-    }
+    protected override void OnParametersSet() { LoadData(); }
 
-    private void OnLanguageChanged()
+    private void OnLanguageChanged(string language)
     {
         LoadData();
         StateHasChanged();
     }
-
-
 
     private void OnEditClick()
     {

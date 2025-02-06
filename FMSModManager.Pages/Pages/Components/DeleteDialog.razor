@@ -1,0 +1,28 @@
+﻿@using FMSModManager.Core.Services
+@using MudBlazor
+@inject LanguageService Lang
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@ContentText</MudText>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">@Lang.GetText("Cancel")</MudButton>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@Lang.GetText("Delete")</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string ContentText { get; set; }
+
+    [Parameter]
+    public Color Color { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+}
