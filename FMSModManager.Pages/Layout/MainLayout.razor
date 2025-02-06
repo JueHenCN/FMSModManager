@@ -1,4 +1,11 @@
+@using FMSModManager.Core.Events
+@using FMSModManager.Core.Services
+@using Prism.Events
 @inherits LayoutComponentBase
+@inject LanguageService Lang
+@inject IEventAggregator EventAggregator
+@inject NavigationManager NavigationManager
+
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -7,9 +14,23 @@
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">架地模MOD管理器</MudText>
-        <MudSpacer />        
+        <MudText Typo="Typo.h5" Class="ml-3">@Lang.GetText("Title", "Main")</MudText>
+        <MudSpacer />
+        <MudMenu ActivationEvent="@MouseEvent.LeftClick" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+            <ActivatorContent>
+                <MudIconButton Icon="@Icons.Material.Filled.Translate" Color="Color.Inherit" />
+            </ActivatorContent>
+            <ChildContent>
+                @foreach (var language in Lang.AvailableLanguages)
+                {
+                    <MudMenuItem OnClick="@(() => Lang.UpdateLanguage(language))">@language</MudMenuItem>
+                }
+            </ChildContent>
+        </MudMenu>
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/JiuLing-zhang/WpfMudBlazorTemplate/" Target="_blank" />
+        <MudButton Color="Color.Inherit" OnClick="@(() => NavigationManager.NavigateTo("/about"))">
+            @Lang.GetText("About", "Main")
+        </MudButton>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
@@ -27,4 +48,15 @@
     {
         _drawerOpen = !_drawerOpen;
     }
+
+    protected override void OnInitialized()
+    {
+        EventAggregator.GetEvent<LanguageChangedEvent>().Subscribe(LanguageChangedFunction);
+    }
+
+    private void LanguageChangedFunction(string language)
+    {
+        StateHasChanged();
+    }
+
 }

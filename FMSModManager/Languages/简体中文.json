@@ -1,13 +1,5 @@
 {
   "Common": {
-    "Title" : "架空地图模拟器MOD管理器",
-    "Home": "主页",
-    "LocalMods": "本地Mod管理",
-    "WorkshopMods": "创意工坊Mod管理",
-    "ReligionMods": "宗教Mod",
-    "CultureMods": "文化Mod",
-    "PublishMods": "已发布Mod",
-    "SubscriptionMods": "订阅Mod",
     "Save": "保存",
     "Cancel": "取消",
     "Delete": "删除",
@@ -15,9 +7,44 @@
     "Add": "添加",
     "Confirm": "确认",
     "Success": "成功",
-    "Error": "错误",
-    "Language": "语言"
+    "Error": "错误"
   },
+
+  "Main":{
+    "Title": "架空地图模拟器MOD管理器",
+    "Language": "语言",
+    "About": "关于",
+    "AboutDescription": "架空地图模拟器MOD管理器是一款用于管理架空地图模拟器MOD的工具。"
+  },
+
+
+  "NavMenu": {
+    "Home": "主页",
+    "LocalMods": "本地Mod管理",
+    "ReligionMods": "宗教 Mod",
+    "CultureMods": "文化集 Mod",
+    "WorkshopMods": "创意工坊Mod管理",
+    "PublishMods": "已发布Mod",
+    "SubscriptionMods": "订阅Mod"
+  },
+
+  "Index": {
+    "ReligionMod": "宗教 Mod",
+    "CultureMod": "文化集 Mod",
+    "CreateNewReligionMod": "创建新的宗教 Mod",
+    "CreateNewCultureMod": "创建新的文化 Mod",
+    "ReligionModDescription": "创建或管理游戏中的宗教系统，包括宗教名称、圣典、修行方式等内容。",
+    "CultureModDescription": "创建或管理游戏中的文化系统，包括文化名称、文化特征、文化习俗等内容。",
+    "ViewAllReligionMods": "查看所有宗教 Mod",
+    "ViewAllCultureMods": "查看所有文化 Mod",
+    "ModCreatedSuccessfully": "Mod 创建成功",
+    "CreateFailed": "创建失败"
+  },
+
+  "LocalModsCulture": {
+    
+  },
+
   "Religion": {
     "Title": "宗教 Mod",
     "Description": "创建或管理游戏中的宗教系统，包括宗教名称、圣典、修行方式等内容",
@@ -31,6 +58,7 @@
     "BasicInfo": "基本信息",
     "Localization": "本地化"
   },
+
   "Culture": {
     "Title": "文化 Mod",
     "Description": "创建或管理游戏中的文化系统，包括文化名称、文化特征、文化习俗等内容",

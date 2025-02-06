@@ -1,16 +1,15 @@
 @using FMSModManager.Core.Services
 @using FMSModManager.Core.Services.Interface
-@using Prism.Events
 @using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
 @inject LanguageService Lang
 @inject ICultureModService CultureModService
 
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Lang.GetText("Home")</MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Lang.GetText("Home", "NavMenu")</MudNavLink>
     
-    <MudNavGroup Title="@Lang.GetText("LocalMods")" Icon="@Icons.Material.Filled.Storage">
-        <MudNavGroup Title="@Lang.GetText("ReligionMods")" Icon="@Icons.Material.Filled.TempleBuddhist">
+    <MudNavGroup Title="@Lang.GetText("LocalMods", "NavMenu")" Icon="@Icons.Material.Filled.Storage">
+        <MudNavGroup Title="@Lang.GetText("ReligionMods", "NavMenu")" Icon="@Icons.Material.Filled.TempleBuddhist">
             @foreach (var mod in _religionMods)
             {
                 <MudNavLink Href="@($"local-mods/religion/{mod}")" Icon="@Icons.Material.Filled.Article">
@@ -19,7 +18,7 @@
             }
         </MudNavGroup>
 
-        <MudNavGroup Title="@Lang.GetText("CultureMods")" Icon="@Icons.Material.Filled.Diversity3">
+        <MudNavGroup Title="@Lang.GetText("CultureMods", "NavMenu")" Icon="@Icons.Material.Filled.Diversity3">
             @foreach (var mod in _cultureMods)
             {
                 <MudNavLink Href="@($"local-mods/culture/{mod}")" Icon="@Icons.Material.Filled.Article">
@@ -29,9 +28,9 @@
         </MudNavGroup>
     </MudNavGroup>
     
-    <MudNavGroup Title="@Lang.GetText("WorkshopMods")" Icon="@Icons.Material.Filled.ShoppingCart">
+    <MudNavGroup Title="@Lang.GetText("WorkshopMods", "NavMenu")" Icon="@Icons.Material.Filled.ShoppingCart">
 
-        <MudNavGroup Title="@Lang.GetText("SubscriptionMods")" Icon="@Icons.Material.Filled.Download">
+        <MudNavGroup Title="@Lang.GetText("SubscriptionMods", "NavMenu")" Icon="@Icons.Material.Filled.Download">
             @foreach (var mod in _subscriptionMods)
             {
                 <MudNavLink Href="@($"workshop-mods/subscription/{mod}")" Icon="@Icons.Material.Filled.Article">
@@ -40,7 +39,7 @@
             }
         </MudNavGroup>
 
-        <MudNavGroup Title="@Lang.GetText("PublishMods")" Icon="@Icons.Material.Filled.Upload">
+        <MudNavGroup Title="@Lang.GetText("PublishMods", "NavMenu")" Icon="@Icons.Material.Filled.Upload">
             @foreach (var mod in _publishMods)
             {
             <MudNavLink Href="@($"workshop-mods/publish/{mod}")" Icon="@Icons.Material.Filled.Article">
@@ -79,7 +78,13 @@
         await SteamworkService.RefauseWorkShopModList();
         EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(RefreshMods);
         EventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Subscribe(RefreshMods);
+        EventAggregator.GetEvent<LanguageChangedEvent>().Subscribe(LanguageChangedFunc);
         RefreshMods();
+    }
+
+    private void LanguageChangedFunc(string language)
+    {
+        StateHasChanged();
     }
     
     public void Dispose()
@@ -87,4 +92,5 @@
         EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(RefreshMods);
         EventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Unsubscribe(RefreshMods);
     }
+
 }

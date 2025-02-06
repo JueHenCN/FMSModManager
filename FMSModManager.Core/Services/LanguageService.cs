@@ -13,7 +13,7 @@ namespace FMSModManager.Core.Services
         private readonly LocalConfigService _localConfigService;
         private readonly IEventAggregator _eventAggregator;
         private Dictionary<string, Dictionary<string, string>>? _translations;
-        public List<string?> AvailableLanguages { get; set; } = new List<string?>();
+        private List<string?> _availableLanguages { get; set; } = new List<string?>();
         public string? CurrentLanguage { get; set; }
 
         public LanguageService(LocalConfigService localConfigService, IFileService fileService, IEventAggregator eventAggregator)
@@ -22,10 +22,12 @@ namespace FMSModManager.Core.Services
             _fileService = fileService;
             _localConfigService = localConfigService;
             _eventAggregator = eventAggregator;
-            AvailableLanguages = Directory.GetFiles(_languageFolder, "*.json").Select(Path.GetFileNameWithoutExtension).ToList();
+            _availableLanguages = Directory.GetFiles(_languageFolder, "*.json").Select(Path.GetFileNameWithoutExtension).ToList();
             LoadTranslations(_localConfigService.LocalConfig.SelLanguageName);
 
         }
+
+        public List<string?> AvailableLanguages => _availableLanguages;
 
         private void LoadTranslations(string language)
         {

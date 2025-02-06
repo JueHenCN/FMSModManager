@@ -1,13 +1,5 @@
 {
   "Common": {
-    "Title": "FMSModManager",
-    "Home": "Home",
-    "LocalMods": "Local Mods",
-    "WorkshopMods": "Workshop Mods",
-    "ReligionMods": "Religion Mods",
-    "CultureMods": "Culture Mods",
-    "PublishMods": "Published Mods",
-    "SubscriptionMods": "Subscription Mods",
     "Save": "Save",
     "Cancel": "Cancel",
     "Delete": "Delete",
@@ -15,9 +7,43 @@
     "Add": "Add",
     "Confirm": "Confirm",
     "Success": "Success",
-    "Error": "Error",
-    "Language": "Language"
+    "Error": "Error"
   },
+
+  "Main": {
+    "Title": "FMS Mod Manager",
+    "Language": "Language",
+    "About": "About",
+    "AboutDescription": "FMS Mod Manager is a tool for managing FMS Mods."
+  },
+
+  "NavMenu": {
+    "Home": "Home",
+    "LocalMods": "Local Mods",
+    "ReligionMods": "Religion Mods",
+    "CultureMods": "Culture Mods",
+    "WorkshopMods": "Workshop Mods",
+    "PublishMods": "Published Mods",
+    "SubscriptionMods": "Subscription Mods"
+  },
+
+  "Index": {
+    "ReligionMod": "Religion Mod",
+    "CultureMod": "Culture Mod",
+    "CreateNewReligionMod": "Create New Religion Mod",
+    "CreateNewCultureMod": "Create New Culture Mod",
+    "ReligionModDescription": "Create and manage religion systems in the game, including religion names, holy books, practices, etc.",
+    "CultureModDescription": "Create and manage culture systems in the game, including culture names, features, customs, etc.",
+    "ViewAllReligionMods": "View All Religion Mods",
+    "ViewAllCultureMods": "View All Culture Mods",
+    "ModCreatedSuccessfully": "Mod created successfully",
+    "CreateFailed": "Create failed"
+  },
+
+  "LocalModsCulture": {
+    
+  },
+
   "Religion": {
     "Title": "Religion Mod",
     "Description": "Create and manage religion systems in the game, including religion names, holy books, practices, etc.",
@@ -30,5 +56,14 @@
     "Practices": "Practices",
     "BasicInfo": "Basic Info",
     "Localization": "Localization"
+  },
+
+  "Culture": {
+    "Title": "Culture Mod",
+    "Description": "Create and manage culture systems in the game, including culture names, features, customs, etc.",
+    "ViewAll": "View All Culture Mods",
+    "CreateNew": "Create New Mod",
+    "NoCultures": "No cultures in current mod",
+    "AddNewCulture": "Add New Culture"
   }
 } 
