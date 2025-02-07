@@ -103,8 +103,8 @@ namespace FMSModManager.Core.Services
             if (_cultureMods[modName] == null)
             {
                 var mod = new CultureModModel();
-                mod.StateNames = new ObservableCollection<TextEntity>(_fileService.ReadCsv<TextEntity>(Path.Combine(_modsPath, modName, FileName.StateNames)));
-                mod.CityNames = new ObservableCollection<TextEntity>(_fileService.ReadCsv<TextEntity>(Path.Combine(_modsPath, modName, FileName.CityNames)));
+                mod.StateNames = _fileService.ReadCsv<TextEntity>(Path.Combine(_modsPath, modName, FileName.StateNames));
+                mod.CityNames = _fileService.ReadCsv<TextEntity>(Path.Combine(_modsPath, modName, FileName.CityNames));
                 mod.PoliticalSystems = _fileService.ReadJson<PoliticalSystemConfig>(Path.Combine(_modsPath, modName, FileName.PoliticalSystems)).PoliticalSystems;
                 _cultureMods[modName] = mod;
 
@@ -139,15 +139,15 @@ namespace FMSModManager.Core.Services
 
         private class PoliticalSystemConfig
         {
-            public ObservableCollection<string> PoliticalSystems { get; set; } = new ObservableCollection<string>();
+            public List<string> PoliticalSystems { get; set; } = new List<string>();
         }
     }
 
     public class CultureModModel
     {
-        public ObservableCollection<TextEntity> StateNames { get; set; } = new ObservableCollection<TextEntity>();
-        public ObservableCollection<TextEntity> CityNames { get; set; } = new ObservableCollection<TextEntity>();
-        public ObservableCollection<string> PoliticalSystems { get; set; } = new ObservableCollection<string>();
+        public List<TextEntity> StateNames { get; set; } = new List<TextEntity>();
+        public List<TextEntity> CityNames { get; set; } = new List<TextEntity>();
+        public List<string> PoliticalSystems { get; set; } = new List<string>();
     }
 }
 

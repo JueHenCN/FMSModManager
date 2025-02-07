@@ -86,8 +86,19 @@
     "Localization": "本地化"
   },
 
-  "$CultureModDetail": {
-
+  "CultureModDetail": {
+    "ModName": "Mod名称",
+    "SearchKey": "查找Key",
+    "DeleteSelectedItems": "删除选中项",
+    "AddNewStateName": "添加新的国家",
+    "AddNewCityName": "添加新的城市",
+    "RowsPerPage": "每页显示",
+    "CityName": "城市名称",
+    "StateName": "国家名称",
+    "DuplicateKey": "Key重复",
+    "SaveSuccess": "保存成功",
+    "SaveFailed": "保存失败",
+    "LoadFailed": "加载失败"
   },
 
   "Culture": {
@@ -102,7 +113,14 @@
   "InputTextDialog": {
     "Required": "请输入文本",
     "RequiredError": "文本不能为空"
+  },
+
+  "AddNewTextEntityDialog": {
+    "BatchAdd": "批量添加",
+    "Add": "添加",
+    "RequiredError": "文本不能为空"
   }
+
 
 
 } 

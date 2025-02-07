@@ -26,7 +26,7 @@
     <DialogContent>
         <MudToolBar Dense="true" Class="mb-2">
             <MudSwitch @bind-Value="_isBatchAdd" @bind-Value:after="() => OnBatchAddChanged(_isBatchAdd)"
-                Color="Color.Primary">批量添加</MudSwitch>
+                Color="Color.Primary">@Lang.GetText("BatchAdd", "AddNewTextEntityDialog")</MudSwitch>
             <MudSpacer />
             <MudButton Color="Color.Primary" Disabled="@(_isBatchAdd)" StartIcon="@Icons.Material.Filled.Add"
                 OnClick="@(OnAddClick)">
@@ -38,12 +38,13 @@
         @if (_isBatchAdd)
         {
             <MudTextField @bind-Value="_inputText" Label="@ContentText" Lines="3" Required="true" Variant="Variant.Outlined"
-                TextChanged="RefreshTextEntitys" RequiredError="@Lang.GetText("RequiredError", "InputTextDialog")"
+                TextChanged="RefreshTextEntitys" RequiredError="@Lang.GetText("RequiredError", "AddNewTextEntityDialog")"
                 Immediate="true" />
         }
 
-        <MudDataGrid Items="_textEntitys" Hover="true" Dense="true" ReadOnly="_isBatchAdd"
-            EditMode="DataGridEditMode.Cell" MultiSelection="true" Height="300px">
+        <MudDataGrid Items="_textEntitys" Hover="true" Dense="true" ReadOnly="false"
+                     EditMode="DataGridEditMode.Cell" MultiSelection="true"
+            Height="300px">
             <Columns>
                 <PropertyColumn Property="x => x.Key" Title="Key" Sortable="false" />
                 <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false" />
@@ -75,7 +76,7 @@
     [Inject]
     public IFileService FileService { get; set; }
 
-    private ObservableCollection<TextEntity> _textEntitys = new();
+    private List<TextEntity> _textEntitys = new();
 
     private bool _isBatchAdd = false;
 
@@ -88,7 +89,9 @@
     {
         var newEntity = new TextEntity() { Key = "NewKey", Chinese = "New Chinese", English = "New English" };
         _textEntitys.Add(newEntity);
+        StateHasChanged();
     }
+
 
     private void OnBatchAddChanged(bool value)
     {
@@ -104,21 +107,19 @@
             };
             _inputText = FileService.ConvertCsvToString(_textEntitys, config);
         }
+        StateHasChanged();
     }
 
     private void RefreshTextEntitys()
     {
-        _textEntitys.Clear();
-
         if (string.IsNullOrEmpty(_inputText)) return;
         var entityValues = new StringBuilder();
         entityValues.Append("Key, Chinese, English, TraditionalChinese, Russian, SpanishSpain, PortugueseBrazil,");
         entityValues.AppendLine("German, Japanese, French, Polish, SpanishLatinAmerica, PortuguesePortugal, Korean,");
         entityValues.Append(_inputText);
 
-        var entitys = FileService.ReadCsvString<TextEntity>(entityValues.ToString());
-
-        _textEntitys = new(entitys);
+        _textEntitys = FileService.ReadCsvString<TextEntity>(entityValues.ToString());
+        StateHasChanged();
     }
 
     protected override void OnInitialized()
@@ -130,6 +131,4 @@
     {
         StateHasChanged();
     }
-
-
 }

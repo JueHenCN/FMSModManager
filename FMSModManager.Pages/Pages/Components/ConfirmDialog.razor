@@ -1,14 +1,16 @@
 @namespace FMSModManager.Pages.Components
+@inject LanguageService Lang
 
 <MudDialog>
     <DialogContent>
         <MudText>@ContentText</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">取消</MudButton>
+        <MudButton OnClick="Cancel">@Lang.GetText("Cancel")</MudButton>
         <MudButton Color="@Color" OnClick="Submit">@ButtonText</MudButton>
     </DialogActions>
 </MudDialog>
+
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }

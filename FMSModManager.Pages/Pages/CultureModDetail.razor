@@ -14,7 +14,7 @@
 @inject LanguageService Lang
 
 
-<MudText Typo="Typo.h4" Class="mb-4">Mod名称: @ModName</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">@Lang.GetText("ModName", "CultureModDetail"): @ModName</MudText>
 
 @if (_cultureDetail == null)
 {
@@ -47,19 +47,19 @@ else
             <MudTabPanel Text="@Lang.GetText("StateName", "CultureModDetail")">
                 <MudToolBar>
                     <MudSpacer />
-                    <MudTextField @bind-Value="_searchStateNameString" Placeholder="查找Key" Adornment="Adornment.Start" Immediate="true"
+                    <MudTextField @bind-Value="_searchStateNameString" Placeholder="@Lang.GetText("SearchKey", "CultureModDetail")" Adornment="Adornment.Start" Immediate="true"
                         AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 
                 </MudToolBar>
                 @if (_isEdit)
                 {
                     <MudToolBar Dense="true" Class="mb-2">
-                        <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Disabled="@(!_selectedStateNames.Any())">
-                            删除选中项
+                        <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Disabled="@(!_selectedStateNames.Any())" OnClick="@(OnDeleteSelectedStateNamesClick)">
+                            @Lang.GetText("DeleteSelectedItems", "CultureModDetail")
                         </MudButton>
                         <MudSpacer />
                         <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(OnAddNewStateNameClick)">
-                            添加新的国家
+                            @Lang.GetText("AddNewStateName", "CultureModDetail")
                         </MudButton>
                     </MudToolBar>
                 }
@@ -70,10 +70,7 @@ else
                     @bind-SelectedItems="@_selectedStateNames"
                     SelectOnRowClick="false">
                     <Columns>
-                        @if (_isEdit)
-                        {
-                            <SelectColumn T="TextEntity" />
-                        }
+                        <SelectColumn T="TextEntity" />
                         <PropertyColumn Property="x => x.Key" Title="Key"/>
                         <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false"/>
                         <PropertyColumn Property="x => x.English" Required="false" Sortable="false"/>
@@ -91,26 +88,26 @@ else
                     </Columns>
 
                     <PagerContent>
-                        <MudDataGridPager T="TextEntity" RowsPerPageString="每页显示" />
+                        <MudDataGridPager T="TextEntity" RowsPerPageString="@Lang.GetText("RowsPerPage", "CultureModDetail")" />
                     </PagerContent>
                 </MudDataGrid>
             </MudTabPanel>
 
-            <MudTabPanel Text="城市名称">
+            <MudTabPanel Text="@Lang.GetText("CityName", "CultureModDetail")">
                 <MudToolBar>
                     <MudSpacer />
-                    <MudTextField @bind-Value="_searchCityNameString" Placeholder="查找Key" Adornment="Adornment.Start" Immediate="true"
+                    <MudTextField @bind-Value="_searchCityNameString" Placeholder="@Lang.GetText("SearchKey", "CultureModDetail")" Adornment="Adornment.Start" Immediate="true"
                         AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                 </MudToolBar>
                 @if (_isEdit)
                 {
                     <MudToolBar Dense="true" Class="mb-2">
-                        <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Disabled="@(!_selectedCityNames.Any())">
-                            删除选中项
+                        <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Disabled="@(!_selectedCityNames.Any())" OnClick="@(OnDeleteSelectedCityNamesClick)">
+                            @Lang.GetText("DeleteSelectedItems", "CultureModDetail")
                         </MudButton>
                         <MudSpacer />
-                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
-                            添加新的城市
+                        <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(OnAddNewCityNameClick)">
+                            @Lang.GetText("AddNewCityName", "CultureModDetail")
                         </MudButton>
                     </MudToolBar>
                 }
@@ -121,10 +118,7 @@ else
                     @bind-SelectedItems="@_selectedCityNames"
                     SelectOnRowClick="false">
                     <Columns>
-                        @if (_isEdit)
-                        {
-                            <SelectColumn T="TextEntity"/>
-                        }
+                        <SelectColumn T="TextEntity" />
                         <PropertyColumn Property="x => x.Key" Title="Key"/>
                         <PropertyColumn Property="x => x.Chinese" Required="false" Sortable="false"/>
                         <PropertyColumn Property="x => x.English" Required="false" Sortable="false"/>
@@ -142,7 +136,7 @@ else
                     </Columns>
 
                     <PagerContent>
-                        <MudDataGridPager T="TextEntity" RowsPerPageString="每页显示" />
+                        <MudDataGridPager T="TextEntity" RowsPerPageString="@Lang.GetText("RowsPerPage", "CultureModDetail")" />
                     </PagerContent>
                 </MudDataGrid>
             </MudTabPanel>
@@ -183,25 +177,60 @@ else
         return false;
     };
 
+    private void OnDeleteSelectedStateNamesClick()
+    {
+        foreach (var item in _selectedStateNames)
+        {
+            _cultureEdit.StateNames.Remove(item);
+        }
+        _selectedStateNames.Clear();
+        StateHasChanged();
+    }
+
+    private void OnDeleteSelectedCityNamesClick()
+    {
+        foreach (var item in _selectedCityNames)
+        {
+            _cultureEdit.CityNames.Remove(item);
+        }
+        _selectedCityNames.Clear();
+        StateHasChanged();
+    }
+
     private async void OnAddNewStateNameClick()
     {
         var parameters = new DialogParameters()
         {
-            { "DialogTitle", "添加新的国家" },
-            { "ContentText", "添加新的国家" }
+            { "DialogTitle", Lang.GetText("AddNewStateName", "CultureModDetail") },
+            { "ContentText", Lang.GetText("AddNewStateName", "CultureModDetail") }
         };
-        var dialog = DialogService.Show<AddNewTextEntityDialog>("添加新的国家", parameters);
+        var dialog = DialogService.Show<AddNewTextEntityDialog>(Lang.GetText("AddNewStateName", "CultureModDetail"), parameters);
         var result = await dialog.Result;
         if (!result.Canceled && result.Data != null)
         {
-            var data = result.Data as ObservableCollection<TextEntity>;
-            foreach (var item in data)
-            {
-                _cultureEdit.StateNames.Add(item);
-            }
+            var data = result.Data as List<TextEntity>;
+            _cultureEdit.StateNames.AddRange(data);
             StateHasChanged();
         }
     }
+
+    private async void OnAddNewCityNameClick()
+    {
+        var parameters = new DialogParameters()
+        {
+            { "DialogTitle", Lang.GetText("AddNewCityName", "CultureModDetail") },
+            { "ContentText", Lang.GetText("AddNewCityName", "CultureModDetail") }
+        };
+        var dialog = DialogService.Show<AddNewTextEntityDialog>(Lang.GetText("AddNewCityName", "CultureModDetail"), parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data != null)
+        {
+            var data = result.Data as List<TextEntity>;
+            _cultureEdit.CityNames.AddRange(data);
+            StateHasChanged();
+        }
+    }
+    
 
     protected override void OnInitialized()
     {
@@ -220,12 +249,14 @@ else
     private void OnEditClick()
     {
         _isEdit = true;
-        _cultureEdit = CultureModService.GetCultureMod(ModName).DeepClone();
+        _cultureEdit = _cultureDetail.DeepClone();
+        StateHasChanged();
     }
 
     private void OnEditCancelClick()
     {
         _isEdit = false;
+        StateHasChanged();
     }
 
     private void OnEditSaveClick()
@@ -236,18 +267,18 @@ else
             var duplicateKey = _cultureEdit?.StateNames.GroupBy(x => x.Key).Where(g => g.Count() > 1).Select(g => g.Key).FirstOrDefault();
             if (duplicateKey != null)
             {
-                Snackbar.Add($"Key重复: {duplicateKey}", Severity.Error);
+                Snackbar.Add($"{Lang.GetText("DuplicateKey", "CultureModDetail")}: {duplicateKey}", Severity.Error);
                 return;
             }
             
             _isEdit = false;
             CultureModService.UpdateCultureMod(ModName, _cultureEdit);
             _cultureDetail = _cultureEdit;
-            Snackbar.Add("保存成功", Severity.Success);
+            Snackbar.Add(Lang.GetText("SaveSuccess", "CultureModDetail"), Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"保存失败: {ex.Message}", Severity.Error);
+            Snackbar.Add($"{Lang.GetText("SaveFailed", "CultureModDetail")}: {ex.Message}", Severity.Error);
         }
     }
 
@@ -259,14 +290,8 @@ else
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"加载失败: {ex.Message}", Severity.Error);
+            Snackbar.Add($"{Lang.GetText("LoadFailed", "CultureModDetail")}: {ex.Message}", Severity.Error);
             NavigationManager.NavigateTo("/");
         }
-    }
-
-    private string GetTranslation<T>(T item, string language) where T : class
-    {
-        var translations = item.GetType().GetProperty("Translations")?.GetValue(item) as Dictionary<string, string>;
-        return translations?.GetValueOrDefault(language, "") ?? "";
     }
 }

@@ -194,10 +194,11 @@
         var parameters = new DialogParameters()
         {
             { "ContentText", $"{Lang.GetText("ConfirmDeleteMessage", "LocalModsCulture")} {modName}? {Lang.GetText("ThisOperationCannotBeRestored", "LocalModsCulture")}" },
+            { "ButtonText", Lang.GetText("Delete", "LocalModsCulture") },
             { "Color", Color.Error }
         };
 
-        var dialog = DialogService.Show<DeleteDialog>($"{Lang.GetText("Delete")} Mod", parameters);
+        var dialog = DialogService.Show<ConfirmDialog>($"{Lang.GetText("Delete")} Mod", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
