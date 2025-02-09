@@ -1,30 +1,36 @@
 @page "/local-mods/religion"
 @using FMSModManager.Core.Services
+@using FMSModManager.Core.Services.Interface
+@using FMSModManager.Pages.Pages.Components
 @using Prism.Events
 @using FMSModManager.Core.Events
 @using FMSModManager.Pages.Components
 @using FMSModManager.Pages.Layout
-@inject ReligionService ReligionService
-@inject LocalizationService LocalizationService
+
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IEventAggregator EventAggregator
+@inject IReligionModService ReligionModService
+@inject LanguageService Lang
 
-<MudText Typo="Typo.h3" Class="mb-4">本地宗教 Mod 管理</MudText>
+<MudText Typo="Typo.h3" Class="mb-4">@Lang.GetText("Title", "LocalModsReligion")</MudText>
 
 <MudGrid>
+
     <MudItem xs="12">
         <MudPaper Class="pa-4">
             <MudToolBar Dense="true">
-                <MudText Typo="Typo.h5">已安装的宗教 Mod</MudText>
+                <MudText Typo="Typo.h5">@Lang.GetText("InstalledReligionMods", "LocalModsReligion")</MudText>
                 <MudSpacer />
                 <MudButton Color="Color.Primary" 
+
                           StartIcon="@Icons.Material.Filled.Add"
                           OnClick="CreateNewMod">
-                    新建 Mod
+                    @Lang.GetText("CreateNewMod", "LocalModsReligion")
                 </MudButton>
             </MudToolBar>
+
             
             @if (_religions == null)
             {
@@ -32,34 +38,38 @@
             }
             else if (!_religions.Any())
             {
-                <MudAlert Severity="Severity.Info">未找到任何宗教 Mod</MudAlert>
+                <MudAlert Severity="Severity.Info">@Lang.GetText("NoReligionModsFound", "LocalModsReligion")</MudAlert>
             }
             else
+
             {
                 <MudTable Items="@_religions" Dense="true" Hover="true">
                     <HeaderContent>
-                        <MudTh>Mod 名称</MudTh>
-                        <MudTh>宗教数量</MudTh>
-                        <MudTh>操作</MudTh>
+                        <MudTh>@Lang.GetText("ModName", "LocalModsReligion")</MudTh>
+                        <MudTh>@Lang.GetText("ReligionCount", "LocalModsReligion")</MudTh>
+                        <MudTh>@Lang.GetText("Operation", "LocalModsReligion")</MudTh>
+
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd DataLabel="Mod 名称">@context</MudTd>
-                        <MudTd DataLabel="宗教数量">
+                        <MudTd DataLabel="@Lang.GetText("ModName", "LocalModsReligion")">@context</MudTd>
+                        <MudTd DataLabel="@Lang.GetText("ReligionCount", "LocalModsReligion")">
                             @try
+
                             {
-                                @(ReligionService.ReadReligion(context).Religions.Count)
+                                @(ReligionModService.GetReligionMod(context).Religions.Count)
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">读取错误</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("ReadError", "LocalModsReligion")</MudChip>
                             }
                         </MudTd>
+
                         <MudTd>
                             <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{context}"))">查看</MudButton>
-                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{context}/edit"))">编辑</MudButton>
-                                <MudButton Color="Color.Error" OnClick="@(() => DeleteReligion(context))">删除</MudButton>
+                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{context}"))">@Lang.GetText("View", "LocalModsReligion")</MudButton>
+                                <MudButton Color="Color.Error" OnClick="@(() => DeleteReligion(context))">@Lang.GetText("Delete", "LocalModsReligion")</MudButton>
                             </MudButtonGroup>
+
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -68,46 +78,15 @@
     </MudItem>
 </MudGrid>
 
-@if (_showDetails && _selectedReligionData != null)
-{
-    <MudDialog Open="@_showDetails" DisableSidePadding="true">
-        <DialogContent>
-            <MudContainer Style="max-height: 60vh; overflow-y: scroll">
-                <MudList Dense="true">
-                    @foreach (var religion in _selectedReligionData.Religions)
-                    {
-                        <MudListItem>
-                            <MudText>
-                                <MudIcon Icon="@Icons.Material.Filled.TempleBuddhist" Class="mr-2" />
-                                @religion.Name
-                            </MudText>
-                            <MudText Typo="Typo.body2" Class="ml-8">
-                                圣典: @religion.HolyBookName
-                            </MudText>
-                            <MudText Typo="Typo.body2" Class="ml-8">
-                                修行方式: @string.Join(", ", religion.Practices)
-                            </MudText>
-                        </MudListItem>
-                    }
-                </MudList>
-            </MudContainer>
-        </DialogContent>
-        <DialogActions>
-            <MudButton OnClick="@(() => _showDetails = false)">关闭</MudButton>
-        </DialogActions>
-    </MudDialog>
-}
-
 @code {
     private List<string> _religions;
-    private bool _showDetails;
-    private ReligionFile _selectedReligionData;
 
     protected override void OnInitialized()
     {
         LoadReligions();
         EventAggregator.GetEvent<ModsChangedEvent>().Subscribe(LoadReligions);
     }
+
 
     public void Dispose()
     {
@@ -116,61 +95,102 @@
 
     private void LoadReligions()
     {
-        _religions = ReligionService.GetAvailableReligionMods();
+        _religions = ReligionModService.GetAvailableReligionMods();
     }
 
     private async Task CreateNewMod()
     {
-        var parameters = new DialogParameters
+        var parameters = new DialogParameters()
         {
-            { "IsNew", true },
-            { "ModName", "" },
-            { "Religions", new List<Religion>() }
+            { "ContentText", Lang.GetText("CreateNewMod", "LocalModsReligion") },
+            { "DialogTitle", Lang.GetText("CreateNewMod", "LocalModsReligion") }
         };
 
-        var dialog = await DialogService.ShowAsync<ReligionModDialog>("创建新的宗教 Mod", parameters);
+        var options = new DialogOptions()
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+
+
+        var dialog = DialogService.Show<InputTextDialog>($"{Lang.GetText("Create", "LocalModsReligion")} Mod", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            try
+            var modName = result.Data.ToString();
+            if (string.IsNullOrWhiteSpace(modName))
             {
-                var data = (dynamic)result.Data;
-                ReligionService.WriteReligion(data.ModName, data.Data);
-                LoadReligions();
-                Snackbar.Add("Mod 创建成功", Severity.Success);
-                NavigationManager.NavigateTo($"/local-mods/religion/{data.ModName}");
-                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+                Snackbar.Add(Lang.GetText("ModNameNull", "LocalModsReligion"), Severity.Error);
+                return;
+            }
+            if(_religions.Contains(modName))
+            {
+                Snackbar.Add(Lang.GetText("ModNameExists", "LocalModsReligion"), Severity.Error);
+                return;
+            }
+            try 
+            {
+                var createResult = ReligionModService.CreateReligionMod(modName);
+                if (createResult != null)
+                {
+                    Snackbar.Add(Lang.GetText("CreateSuccess", "LocalModsReligion"), Severity.Success);
+                    EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+                    NavigationManager.NavigateTo($"/local-mods/religion/{modName}");
+                }
+                else
+                {
+                    Snackbar.Add(Lang.GetText("CreateFailed", "LocalModsReligion"), Severity.Error);
+                }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"创建失败: {ex.Message}", Severity.Error);
+                Snackbar.Add($"{Lang.GetText("CreateFailed", "LocalModsReligion")}: {ex.Message}", Severity.Error);
             }
+            
+            
+
         }
     }
 
     private async Task DeleteReligion(string modName)
     {
-        bool? result = await DialogService.ShowMessageBox(
-            "确认删除",
-            $"确定要删除 {modName} 吗？此操作不可恢复。",
-            yesText: "删除",
-            noText: "取消"
-        );
+        var parameters = new DialogParameters()
+        {
+            { "ContentText", $"{Lang.GetText("ConfirmDeleteMessage", "LocalModsReligion")} {modName}? {Lang.GetText("ThisOperationCannotBeRestored", "LocalModsReligion")}" },
+            { "ButtonText", Lang.GetText("Delete", "LocalModsReligion") },
+            { "Color", Color.Error }
+        };
 
-        if (result ?? false)
+        var dialog = DialogService.Show<ConfirmDialog>($"{Lang.GetText("Delete", "LocalModsReligion")} Mod", parameters);
+        var result = await dialog.Result;
+
+
+        if (!result.Canceled)
         {
             try
             {
-                ReligionService.DeleteReligion(modName);
-                EventAggregator.GetEvent<ModsChangedEvent>().Publish();
-                _religions.Remove(modName);
-                Snackbar.Add("Mod 删除成功", Severity.Success);
+                var delReuslt = ReligionModService.DeleteReligionMod(modName);
+                if (delReuslt)
+                {
+                    EventAggregator.GetEvent<ModsChangedEvent>().Publish();
+                    _religions.Remove(modName);
+                    Snackbar.Add(Lang.GetText("DeleteSuccess", "LocalModsReligion"), Severity.Success);
+                }
+                else
+
+                {
+                    Snackbar.Add(Lang.GetText("DeleteFailed", "LocalModsReligion"), Severity.Error);
+                }
+
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"删除失败: {ex.Message}", Severity.Error);
+                Snackbar.Add($"{Lang.GetText("DeleteFailed", "LocalModsReligion")}: {ex.Message}", Severity.Error);
             }
+
+
         }
     }
 }

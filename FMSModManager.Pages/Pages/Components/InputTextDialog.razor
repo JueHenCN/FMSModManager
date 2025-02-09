@@ -20,11 +20,11 @@
     <DialogActions>
         <MudButton Color="Color.Error"
                    Variant="Variant.Text"
-                   OnClick="Cancel">@Lang.GetText("Cancel")</MudButton>
+                   OnClick="Cancel">@Lang.GetText("Cancel", "InputTextDialog")</MudButton>
         <MudButton Color="Color.Primary"
                    Variant="Variant.Text"
                    Disabled="@(!_isValid)"
-                   OnClick="Submit">@Lang.GetText("Confirm")</MudButton>
+                   OnClick="Submit">@Lang.GetText("Confirm", "InputTextDialog")</MudButton>
 
     </DialogActions>
 </MudDialog>

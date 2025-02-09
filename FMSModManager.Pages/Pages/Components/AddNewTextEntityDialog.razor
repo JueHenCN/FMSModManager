@@ -17,9 +17,10 @@
 
 
     <DialogActions>
-        <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="Cancel">@Lang.GetText("Cancel")</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="Cancel">@Lang.GetText("Cancel", "AddNewTextEntityDialog")</MudButton>
         <MudButton Color="Color.Primary" Variant="Variant.Text" Disabled="@(!_textEntitys.Any())" OnClick="Submit">
-            @Lang.GetText("Confirm")</MudButton>
+            @Lang.GetText("Confirm", "AddNewTextEntityDialog")</MudButton>
+
 
     </DialogActions>
 
@@ -30,7 +31,7 @@
             <MudSpacer />
             <MudButton Color="Color.Primary" Disabled="@(_isBatchAdd)" StartIcon="@Icons.Material.Filled.Add"
                 OnClick="@(OnAddClick)">
-                @Lang.GetText("Add")
+                @Lang.GetText("Add", "AddNewTextEntityDialog")
             </MudButton>
 
         </MudToolBar>

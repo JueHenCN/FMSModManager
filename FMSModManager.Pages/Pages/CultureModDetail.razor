@@ -29,15 +29,15 @@ else
                 @if (_isEdit)
                 {
                     <MudButton OnClick="@(OnEditCancelClick)" StartIcon="@Icons.Material.Filled.Cancel">
-                        @Lang.GetText("Cancel")
+                        @Lang.GetText("Cancel", "CultureModDetail")
                     </MudButton>
                     <MudButton OnClick="@(OnEditSaveClick)" StartIcon="@Icons.Material.Filled.Save">
-                        @Lang.GetText("Save")
+                        @Lang.GetText("Save", "CultureModDetail")
                     </MudButton>
                 }
                 else
                 {
-                    <MudButton OnClick="@(OnEditClick)" StartIcon=@Icons.Material.Filled.Edit>@Lang.GetText("Edit"))</MudButton>
+                    <MudButton OnClick="@(OnEditClick)" StartIcon=@Icons.Material.Filled.Edit>@Lang.GetText("Edit", "CultureModDetail")</MudButton>
                 }
             </MudButtonGroup>
         </MudToolBar>

@@ -1,27 +1,10 @@
 {
-  "Common": {
-    "Add": "添加",
-    "Edit": "编辑",
-    "Save": "保存",
-    "Open": "打开",
-    "Close": "关闭",
-    "Delete": "删除",
-    "Confirm": "确认",
-    "Cancel": "取消",
-    "Success": "成功",
-    "Failed": "失败",
-    "Error": "错误",
-    "NoData": "没有数据",
-    "Operation": "操作",
-    "Culture": "文化集",
-    "Religion": "宗教"
-  },
-
-  "Main":{
+  "MainLayout":{
     "Title": "架空地图模拟器MOD管理器",
     "Language": "语言",
     "About": "关于",
     "AboutDescription": "架空地图模拟器MOD管理器是一款用于管理架空地图模拟器MOD的工具。"
+
   },
 
   "NavMenu": {
@@ -64,6 +47,8 @@
     "ThisOperationCannotBeRestored": "此操作不可恢复",
     "Delete": "删除",
     "Cancel": "取消",
+    "Operation": "操作",
+    "Open": "打开",
     "DeleteSuccess": "删除成功",
     "DeleteFailed": "删除失败",
     "ModNameNull": "Mod 名称不能为空",
@@ -71,19 +56,28 @@
 
   },
 
-
-  "Religion": {
-    "Title": "宗教 Mod",
-    "Description": "创建或管理游戏中的宗教系统，包括宗教名称、圣典、修行方式等内容",
-    "ViewAll": "查看所有宗教 Mod",
-    "CreateNew": "新建 Mod",
-    "NoReligions": "当前 Mod 中没有宗教信息",
-    "AddNewReligion": "添加新宗教",
-    "ReligionName": "宗教名称",
-    "HolyBookName": "圣典名称",
-    "Practices": "修行方式",
-    "BasicInfo": "基本信息",
-    "Localization": "本地化"
+  "LocalModsReligion": {
+    "Title": "本地宗教 Mod 管理",
+    "ModName": "Mod 名称",
+    "InstalledReligionMods": "已安装的宗教 Mod",
+    "ReligionCount": "宗教数量",
+    "ReadError": "读取错误",
+    "Operation": "操作",
+    "Open": "打开",
+    "View": "查看",
+    "Delete": "删除",
+    "Cancel": "取消",
+    "CreateNewMod": "新建宗教Mod",
+    "CreateSuccess": "创建成功",
+    "CreateFailed": "创建失败",
+    "ConfirmDelete": "确认删除",
+    "ConfirmDeleteMessage": "是否确定删除",
+    "ThisOperationCannotBeRestored": "此操作不可恢复",
+    "DeleteSuccess": "删除成功",
+    "DeleteFailed": "删除失败",
+    "ModNameNull": "Mod 名称不能为空",
+    "ModNameExists": "Mod 名称已存在",
+    "CreateNewReligionMod": "新建宗教 Mod"
   },
 
   "CultureModDetail": {
@@ -98,7 +92,10 @@
     "DuplicateKey": "Key重复",
     "SaveSuccess": "保存成功",
     "SaveFailed": "保存失败",
-    "LoadFailed": "加载失败"
+    "LoadFailed": "加载失败",
+    "Edit": "编辑",
+    "Cancel": "取消",
+    "Save": "保存"
   },
 
   "Culture": {
@@ -112,13 +109,18 @@
 
   "InputTextDialog": {
     "Required": "请输入文本",
-    "RequiredError": "文本不能为空"
+    "RequiredError": "文本不能为空",
+    "Cancel": "取消",
+    "Confirm": "确认"
   },
+
 
   "AddNewTextEntityDialog": {
     "BatchAdd": "批量添加",
     "Add": "添加",
-    "RequiredError": "文本不能为空"
+    "RequiredError": "文本不能为空",
+    "Cancel": "取消",
+    "Confirm": "确认"
   }
 
 

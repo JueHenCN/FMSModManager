@@ -4,6 +4,7 @@
 @using FMSModManager.Pages.Components
 @inject LanguageService Lang
 @inject ICultureModService CultureModService
+@inject IReligionModService ReligionModService
 
 <MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Lang.GetText("Home", "NavMenu")</MudNavLink>
@@ -57,8 +58,6 @@
     private List<string> _publishMods = new();
     
     [Inject]
-    private ReligionService ReligionService { get; set; }
-    [Inject]
     private SteamworkService SteamworkService { get; set; }
     [Inject]
     private IEventAggregator EventAggregator { get; set; }
@@ -67,7 +66,7 @@
     private void RefreshMods()
     {
         _cultureMods = CultureModService.GetAvailableCultureMods();
-        _religionMods = ReligionService.GetAvailableReligionMods();
+        _religionMods = ReligionModService.GetAvailableReligionMods();
         _subscriptionMods = SteamworkService.GetAvailableSubscriptionMods();
         _publishMods = SteamworkService.GetAvailablePublishMods();
         StateHasChanged();

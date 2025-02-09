@@ -30,9 +30,35 @@ namespace FMSModManager.Test
             //var editValue2 = lang.GetText("Edit");
             //Console.WriteLine(editValue2);
 
-            TestJsonString();
+            //TestJsonString();
 
+            TestReligion();
+
+            Console.WriteLine("执行完成");
             Console.ReadLine();
+        }
+
+        static void TestReligion()
+        {
+            var eventAggregator = new EventAggregator();
+            var fileService = new FileService();
+            var local = new LocalConfigService(new SteamworkService(eventAggregator), fileService, eventAggregator);
+            var lang = new LanguageService(local,fileService,eventAggregator);
+            var steam = new SteamworkService(eventAggregator);
+
+            var modMgr = new ReligionModService(fileService, steam);
+
+            foreach (var item in modMgr.GetAvailableReligionMods())
+            {
+                Console.WriteLine(item);
+                var mod = modMgr.GetReligionMod(item);
+            }
+
+            modMgr.CreateReligionMod("Test");
+
+
+
+
         }
 
         static void TestJsonString()

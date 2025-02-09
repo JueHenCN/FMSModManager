@@ -46,7 +46,7 @@ namespace FMSModManager.Core.Services
             _eventAggregator.GetEvent<LanguageChangedEvent>().Publish(language);
         }
 
-        public string GetText(string key, string category = "Common")
+        public string GetText(string key, string category)
         {
             if (_translations != null &&
                 _translations.TryGetValue(category, out var categoryDict) &&

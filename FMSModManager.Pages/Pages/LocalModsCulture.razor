@@ -46,7 +46,7 @@
                         <MudTh>@Lang.GetText("CityCount", "LocalModsCulture")</MudTh>
                         <MudTh>@Lang.GetText("PoliticalSystemCount", "LocalModsCulture")</MudTh>
                         <MudTh>@Lang.GetText("StateNameCount", "LocalModsCulture")</MudTh>
-                        <MudTh>@Lang.GetText("Operation")</MudTh>
+                        <MudTh>@Lang.GetText("Operation", "LocalModsCulture")</MudTh>
 
                     </HeaderContent>
                     <RowTemplate>
@@ -59,7 +59,7 @@
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error")</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error", "LocalModsCulture")</MudChip>
                             }
                         </MudTd>
                         <MudTd DataLabel="@Lang.GetText("PoliticalSystemCount", "LocalModsCulture")">
@@ -71,7 +71,7 @@
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error")</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error", "LocalModsCulture")</MudChip>
                             }
                         </MudTd>
                         <MudTd DataLabel="@Lang.GetText("StateNameCount", "LocalModsCulture")">
@@ -82,14 +82,15 @@
                             }
                             catch
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error")</MudChip>
+                                <MudChip Color="Color.Error" Size="Size.Small">@Lang.GetText("Error", "LocalModsCulture")</MudChip>
                             }
                         </MudTd>
-                        <MudTd>
+                        <MudTd DataLabel="@Lang.GetText("Operation", "LocalModsCulture")">
                             <MudButtonGroup Size="Size.Small" Variant="Variant.Outlined">
-                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}"))">@Lang.GetText("Open")</MudButton>
-                                <MudButton Color="Color.Error" OnClick="@(() => DeleteCulture(context))">@Lang.GetText("Delete")</MudButton>
+                                <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}"))">@Lang.GetText("Open", "LocalModsCulture")</MudButton>
+                                <MudButton Color="Color.Error" OnClick="@(() => DeleteCulture(context))">@Lang.GetText("Delete", "LocalModsCulture")</MudButton>
                             </MudButtonGroup>
+
 
                         </MudTd>
                     </RowTemplate>
@@ -148,7 +149,7 @@
                 FullWidth = true
             };
 
-        var dialog = DialogService.Show<InputTextDialog>($"{Lang.GetText("Create")} Mod", parameters, options);
+        var dialog = DialogService.Show<InputTextDialog>($"{Lang.GetText("Create", "LocalModsCulture")} Mod", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
@@ -198,7 +199,7 @@
             { "Color", Color.Error }
         };
 
-        var dialog = DialogService.Show<ConfirmDialog>($"{Lang.GetText("Delete")} Mod", parameters);
+        var dialog = DialogService.Show<ConfirmDialog>($"{Lang.GetText("Delete", "LocalModsCulture")} Mod", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)

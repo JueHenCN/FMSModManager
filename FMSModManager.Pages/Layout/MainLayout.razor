@@ -14,7 +14,7 @@
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">@Lang.GetText("Title", "Main")</MudText>
+        <MudText Typo="Typo.h5" Class="ml-3">@Lang.GetText("Title", "MainLayout")</MudText>
         <MudSpacer />
         <MudMenu ActivationEvent="@MouseEvent.LeftClick" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
             <ActivatorContent>
@@ -29,7 +29,7 @@
         </MudMenu>
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/JiuLing-zhang/WpfMudBlazorTemplate/" Target="_blank" />
         <MudButton Color="Color.Inherit" OnClick="@(() => NavigationManager.NavigateTo("/about"))">
-            @Lang.GetText("About", "Main")
+            @Lang.GetText("About", "MainLayout")
         </MudButton>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">

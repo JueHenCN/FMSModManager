@@ -39,9 +39,10 @@ namespace FMSModManager
             services.AddSingleton<IFileService, FileService>();
             services.AddSingleton<SteamworkService>();
             services.AddSingleton<LocalConfigService>();
-            services.AddSingleton<ReligionService>(new ReligionService(examplePath));
-            services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
+            //services.AddSingleton<ReligionService>(new ReligionService(examplePath));
+            //services.AddSingleton<LocalizationService>(new LocalizationService(examplePath));
             services.AddSingleton<ICultureModService, CultureModService>();
+            services.AddSingleton<IReligionModService, ReligionModService>();
             services.AddSingleton<LanguageService>();
 
 
