@@ -117,6 +117,12 @@ namespace FMSModManager.Core.Services
         {
             try
             {
+                // Add null safety check before accessing mod data
+                if (!_cultureMods.ContainsKey(modName) || _cultureMods[modName] == null)
+                {
+                    return false;
+                }
+                
                 var mod = _cultureMods[modName];
                 _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.StateNames), mod.StateNames);
                 _fileService.WriteCsv(Path.Combine(_modsPath, modName, FileName.CityNames), mod.CityNames);

@@ -5,6 +5,7 @@
 @inject LanguageService Lang
 @inject ICultureModService CultureModService
 @inject IReligionModService ReligionModService
+@implements IDisposable
 
 <MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Lang.GetText("Home", "NavMenu")</MudNavLink>
@@ -90,6 +91,7 @@
     {
         EventAggregator.GetEvent<ModsChangedEvent>().Unsubscribe(RefreshMods);
         EventAggregator.GetEvent<SteamworkServiceRefuseEvent>().Unsubscribe(RefreshMods);
+        EventAggregator.GetEvent<LanguageChangedEvent>().Unsubscribe(LanguageChangedFunc);
     }
 
 }

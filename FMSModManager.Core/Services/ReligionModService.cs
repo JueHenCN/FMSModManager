@@ -114,6 +114,12 @@ namespace FMSModManager.Core.Services
         {
             try
             {
+                // Add null safety check before accessing mod data
+                if (!_religionMods.ContainsKey(modName) || _religionMods[modName] == null)
+                {
+                    return false;
+                }
+                
                 var mod = _religionMods[modName];
                 _fileService.WriteCsv(Path.Combine(_modsPath, modName, ReligionFileNames.ReligionData), mod.ReligionData);
                 _fileService.WriteJson(Path.Combine(_modsPath, modName, ReligionFileNames.ReligionKey), new ReligionKeys(){
