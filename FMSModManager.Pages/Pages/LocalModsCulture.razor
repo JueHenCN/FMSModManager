@@ -11,6 +11,7 @@
 @inject IEventAggregator EventAggregator
 @inject ICultureModService CultureModService
 @inject LanguageService Lang
+@implements IDisposable
 
 <MudText Typo="Typo.h3" Class="mb-4">@Lang.GetText("Title", "LocalModsCulture")</MudText>
 
@@ -50,12 +51,15 @@
 
                     </HeaderContent>
                     <RowTemplate>
+                        @{
+                            // Cache the mod data once per row to avoid multiple service calls
+                            var modData = CultureModService.GetCultureMod(context);
+                        }
                         <MudTd DataLabel="@Lang.GetText("ModName", "LocalModsCulture")">@context</MudTd>
                         <MudTd DataLabel="@Lang.GetText("CityCount", "LocalModsCulture")">
                             @try
-
                             {
-                                @(CultureModService.GetCultureMod(context)?.CityNames.Count ?? 0)
+                                @(modData?.CityNames.Count ?? 0)
                             }
                             catch
                             {
@@ -63,11 +67,9 @@
                             }
                         </MudTd>
                         <MudTd DataLabel="@Lang.GetText("PoliticalSystemCount", "LocalModsCulture")">
-
                             @try
-
                             {
-                                @(CultureModService.GetCultureMod(context)?.PoliticalSystems.Count ?? 0)
+                                @(modData?.PoliticalSystems.Count ?? 0)
                             }
                             catch
                             {
@@ -75,10 +77,9 @@
                             }
                         </MudTd>
                         <MudTd DataLabel="@Lang.GetText("StateNameCount", "LocalModsCulture")">
-
                             @try
                             {
-                                @(CultureModService.GetCultureMod(context)?.StateNames.Count ?? 0)
+                                @(modData?.StateNames.Count ?? 0)
                             }
                             catch
                             {
@@ -90,8 +91,6 @@
                                 <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/culture/{context}"))">@Lang.GetText("Open", "LocalModsCulture")</MudButton>
                                 <MudButton Color="Color.Error" OnClick="@(() => DeleteCulture(context))">@Lang.GetText("Delete", "LocalModsCulture")</MudButton>
                             </MudButtonGroup>
-
-
                         </MudTd>
                     </RowTemplate>
                 </MudTable>

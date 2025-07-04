@@ -13,6 +13,7 @@
 @inject IEventAggregator EventAggregator
 @inject IReligionModService ReligionModService
 @inject LanguageService Lang
+@implements IDisposable
 
 <MudText Typo="Typo.h3" Class="mb-4">@Lang.GetText("Title", "LocalModsReligion")</MudText>
 
@@ -51,12 +52,15 @@
 
                     </HeaderContent>
                     <RowTemplate>
+                        @{
+                            // Cache the mod data once per row to avoid multiple service calls
+                            var modData = ReligionModService.GetReligionMod(context);
+                        }
                         <MudTd DataLabel="@Lang.GetText("ModName", "LocalModsReligion")">@context</MudTd>
                         <MudTd DataLabel="@Lang.GetText("ReligionCount", "LocalModsReligion")">
                             @try
-
                             {
-                                @(ReligionModService.GetReligionMod(context).Religions.Count)
+                                @(modData?.Religions.Count ?? 0)
                             }
                             catch
                             {
@@ -69,7 +73,6 @@
                                 <MudButton OnClick="@(() => NavigationManager.NavigateTo($"/local-mods/religion/{context}"))">@Lang.GetText("View", "LocalModsReligion")</MudButton>
                                 <MudButton Color="Color.Error" OnClick="@(() => DeleteReligion(context))">@Lang.GetText("Delete", "LocalModsReligion")</MudButton>
                             </MudButtonGroup>
-
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
